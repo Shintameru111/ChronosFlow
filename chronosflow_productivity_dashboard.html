@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChronosFlow — Personal Productivity &amp; Time Management Dashboard</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Base Typography & Scrollbar Polish */
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Circular SVG Progress Ring Transition */
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.45s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    /* Subtle Pulse Animation for Active Focus Session */
+    @keyframes gentlePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(1.15); }
+    }
+    .animate-live-dot {
+      animation: gentlePulse 2.2s infinite ease-in-out;
+    }
+
+    /* Custom Scrollbar for Task List */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(148, 163, 184, 0.35);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(148, 163, 184, 0.55);
+    }
+  </style>
+</head>
+
+<body class="bg-stone-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 selection:bg-indigo-500 selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION BAR                                                    -->
+  <!-- ===================================================================== -->
+  <header class="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <polyline points="12 7 12 12 15 15"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight leading-none">ChronosFlow</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
+              Focus OS
+            </span>
+          </div>
+          <p id="header-date-display" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Personal Productivity Workspace</p>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Timer Settings Trigger -->
+        <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals & Daily Goal">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="hidden sm:inline">Intervals</span>
+        </button>
+
+        <!-- Sound / Mute Toggle -->
+        <button id="btn-mute-toggle" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle Completion Chime">
+          <svg id="icon-vol-on" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="icon-vol-off" class="w-4 h-4 sm:w-5 sm:h-5 hidden text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Dark / Light Theme Toggle -->
+        <button id="btn-theme-toggle" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Toggle Theme" title="Toggle Light / Dark Theme">
+          <svg id="icon-sun" class="w-4 h-4 sm:w-5 sm:h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <svg id="icon-moon" class="w-4 h-4 sm:w-5 sm:h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN BENTO-GRID WORKSPACE                                             -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+    <!-- ROW 1: 4 KPI TELEMETRY CARDS -->
+    <section aria-label="Daily Productivity Metrics" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <!-- KPI 1: Today's Focus Time -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <span class="text-xs font-semibold uppercase tracking-wider">Today's Focus</span>
+          <span class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
+        </div>
+        <div class="mt-3">
+          <div id="kpi-focus-time" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">0m</div>
+          <p id="kpi-sessions-count" class="text-xs text-slate-500 dark:text-slate-400 mt-1">0 sessions completed</p>
+        </div>
+      </div>
+
+      <!-- KPI 2: Daily Goal Progress -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <span class="text-xs font-semibold uppercase tracking-wider">Daily Goal</span>
+          <button id="btn-edit-goal" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline justify-between">
+            <span id="kpi-goal-percent" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">0%</span>
+            <span id="kpi-goal-fraction" class="text-xs font-mono text-slate-500 dark:text-slate-400">0 / 120m</span>
+          </div>
+          <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2.5">
+            <div id="kpi-goal-bar" class="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 3: Tasks Completed -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <span class="text-xs font-semibold uppercase tracking-wider">Tasks Done</span>
+          <span class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
+        </div>
+        <div class="mt-3">
+          <div id="kpi-tasks-done" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">0 / 0</div>
+          <p id="kpi-tasks-pending" class="text-xs text-slate-500 dark:text-slate-400 mt-1">0 remaining in queue</p>
+        </div>
+      </div>
+
+      <!-- KPI 4: Focus Streak -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <span class="text-xs font-semibold uppercase tracking-wider">Active Streak</span>
+          <span class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+          </span>
+        </div>
+        <div class="mt-3">
+          <div id="kpi-streak-days" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">4 Days</div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Consistent deep work</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 2: MAIN FOCUS ENGINE (LEFT) + TASK & TIME-BLOCK MANAGER (RIGHT) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (5 cols): POMODORO TIMER, AMBIENT AUDIO & WEEKLY CHART -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+
+        <!-- Pomodoro Focus Card -->
+        <section class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center">
+
+          <!-- Mode Switcher Pills -->
+          <div class="inline-flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/90 w-full max-w-xs" role="tablist">
+            <button data-mode="focus" class="mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition">Focus</button>
+            <button data-mode="short" class="mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition">Short Break</button>
+            <button data-mode="long" class="mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition">Long Break</button>
+          </div>
+
+          <!-- Circular SVG Progress Timer -->
+          <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-6 flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 220 220">
+              <!-- Track Circle -->
+              <circle
+                cx="110" cy="110" r="96"
+                fill="none"
+                stroke-width="10"
+                class="stroke-slate-100 dark:stroke-slate-800"
+              />
+              <!-- Active Progress Ring -->
+              <circle
+                id="timer-progress-ring"
+                cx="110" cy="110" r="96"
+                fill="none"
+                stroke-width="10"
+                stroke-linecap="round"
+                stroke-dasharray="603.19"
+                stroke-dashoffset="0"
+                class="progress-ring__circle stroke-indigo-600 dark:stroke-indigo-500"
+              />
+            </svg>
+
+            <!-- Center Digital Readout -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span id="timer-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <span id="timer-mode-label" class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Deep Focus</span>
+              </div>
+              <div id="timer-readout" class="text-5xl sm:text-6xl font-mono font-bold tracking-tight tabular-nums">
+                25:00
+              </div>
+              <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Press <kbd class="font-mono px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Space</kbd> to toggle</span>
+            </div>
+          </div>
+
+          <!-- Active Task Banner (Linked Task) -->
+          <div class="w-full mb-5 px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-2 text-left">
+            <div class="min-w-0">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Working On</div>
+              <div id="active-task-title" class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                Select a task from your queue →
+              </div>
+            </div>
+            <button id="btn-unlink-task" class="hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition" title="Unlink Task">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+            </button>
+          </div>
+
+          <!-- Primary Timer Controls -->
+          <div class="flex items-center justify-center gap-3 w-full">
+            <button id="btn-timer-reset" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Reset Timer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+            </button>
+
+            <button id="btn-timer-toggle" class="flex-1 max-w-[190px] py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+              <svg id="icon-timer-play" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              <svg id="icon-timer-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+              <span id="label-timer-toggle">Start Focus</span>
+            </button>
+
+            <button id="btn-timer-skip" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Complete &amp; Skip Session">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Synthesized Ambient Soundscape Bar (Web Audio API) -->
+          <div class="w-full mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                Focus Soundscape
+              </span>
+              <span id="ambient-status-text" class="text-[11px] font-mono text-slate-400">Off</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button data-sound="off" class="sound-btn py-2 px-2 rounded-xl text-xs font-medium border transition">Off</button>
+              <button data-sound="rain" class="sound-btn py-2 px-2 rounded-xl text-xs font-medium border transition">Soft Rain</button>
+              <button data-sound="brown" class="sound-btn py-2 px-2 rounded-xl text-xs font-medium border transition">Deep Noise</button>
+              <button data-sound="binaural" class="sound-btn py-2 px-2 rounded-xl text-xs font-medium border transition">40Hz Focus</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Weekly Focus Analytics Card -->
+        <section class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold">Weekly Focus Output</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Minutes logged over the last 7 days</p>
+            </div>
+            <span id="weekly-total-badge" class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-mono text-xs font-semibold">
+              0m total
+            </span>
+          </div>
+
+          <!-- 7-Day Bar Chart -->
+          <div id="weekly-chart-container" class="h-36 pt-4 flex items-end justify-between gap-2 sm:gap-3">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCKING MANAGER -->
+      <section class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
+
+        <!-- Header & Filters -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Click any task to link it with the active focus timer</p>
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
+            <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg transition">All</button>
+            <button data-filter="active" class="filter-btn px-2.5 py-1 rounded-lg transition">Active</button>
+            <button data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg transition">Done</button>
+          </div>
+        </div>
+
+        <!-- Add New Task Form -->
+        <form id="form-add-task" class="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input
+              id="input-task-title"
+              type="text"
+              required
+              maxlength="90"
+              placeholder="What do you want to accomplish?"
+              class="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Add Task</span>
+            </button>
+          </div>
+
+          <!-- Task Metadata Controls: Priority, Time Block, Est. Pomodoros -->
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
+              <span class="text-slate-400">Priority:</span>
+              <select id="select-task-priority" class="bg-transparent font-semibold text-slate-700 dark:text-slate-200 focus:outline-none">
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </label>
+
+            <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
+              <span class="text-slate-400">Block:</span>
+              <select id="select-task-block" class="bg-transparent font-semibold text-slate-700 dark:text-slate-200 focus:outline-none">
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+                <option value="Anytime">Anytime</option>
+              </select>
+            </label>
+
+            <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
+              <span class="text-slate-400">Est. Sessions:</span>
+              <input id="input-task-est" type="number" min="1" max="10" value="2" class="w-10 bg-transparent font-mono font-semibold text-slate-700 dark:text-slate-200 focus:outline-none text-center" />
+            </label>
+          </div>
+        </form>
+
+        <!-- Task Queue List -->
+        <div id="task-list-container" class="mt-4 space-y-2.5 max-h-[460px] overflow-y-auto custom-scroll pr-1">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+        <!-- Footer Bulk Actions -->
+        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <span id="footer-pomodoro-summary">Estimated workload: 0 sessions</span>
+          <div class="flex items-center gap-3">
+            <button id="btn-clear-completed" class="hover:text-rose-600 dark:hover:text-rose-400 font-medium transition">Clear Completed</button>
+            <span>•</span>
+            <button id="btn-reset-demo" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition">Restore Sample Data</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- CUSTOMIZATION MODAL (TIMER INTERVALS & DAILY GOAL)                    -->
+  <!-- ===================================================================== -->
+  <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold">Timer &amp; Goal Configuration</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Tailor your focus cadence (in minutes)</p>
+        </div>
+        <button id="btn-close-settings" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Preset Cadence Chips -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-400">Presets:</span>
+        <button type="button" data-preset="25,5,15" class="preset-chip px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950 text-xs font-mono font-semibold transition">25 / 5 / 15</button>
+        <button type="button" data-preset="50,10,20" class="preset-chip px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950 text-xs font-mono font-semibold transition">50 / 10 / 20</button>
+        <button type="button" data-preset="15,3,10" class="preset-chip px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950 text-xs font-mono font-semibold transition">15 / 3 / 10</button>
+      </div>
+
+      <form id="form-settings" class="space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Focus (min)</label>
+            <input id="set-focus-min" type="number" min="1" max="120" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm font-semibold" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Short Break</label>
+            <input id="set-short-min" type="number" min="1" max="60" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm font-semibold" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Long Break</label>
+            <input id="set-long-min" type="number" min="1" max="60" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm font-semibold" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Daily Focus Target (minutes)</label>
+          <input id="set-daily-goal" type="number" min="15" max="720" step="15" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm font-semibold" />
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm transition">
+          Save Preferences
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Feedback Banner -->
+  <div id="toast-banner" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-200">
+    <div id="toast-message" class="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs sm:text-sm font-medium shadow-lg"></div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC (MODULAR VANILLA JS + WEB AUDIO SYNTHESIZER)        -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * ChronosFlow — Personal Productivity & Time Management Engine
+     * Modules:
+     *  1. StorageService: Handles localStorage state hydration & persistence.
+     *  2. AudioEngine: Zero-dependency Web Audio API synthesizer for gentle
+     *     completion chimes and continuous focus soundscapes (Rain, Deep Noise, 40Hz).
+     *  3. TimerController: High-precision interval countdown with SVG progress ring.
+     *  4. TaskManager & Analytics: Priority tasks, time blocks, and 7-day bar chart.
+     */
+
+    const STORAGE_KEY = 'chronosflow_portfolio_v1';
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
+
+    // Helper: Get local YYYY-MM-DD key
+    function getTodayKey(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Default starter state for first-time portfolio visitors
+    function createDefaultState() {
+      const weeklyLog = {};
+      const sampleMinutes = [75, 110, 90, 135, 100, 125, 25];
+      for (let i = 6; i >= 0; i--) {
+        weeklyLog[getTodayKey(-i)] = sampleMinutes[6 - i];
+      }
+
+      return {
+        theme: 'light',
+        muted: false,
+        settings: {
+          focusMin: 25,
+          shortMin: 5,
+          longMin: 15,
+          dailyGoalMin: 120,
+        },
+        activeTaskId: 'task-1',
+        filter: 'all',
+        streakDays: 4,
+        sessionsToday: 1,
+        weeklyLog, // { 'YYYY-MM-DD': minutesLogged }
+        tasks: [
+          {
+            id: 'task-1',
+            title: 'Architect responsive frontend portfolio components',
+            priority: 'high',
+            block: 'Morning',
+            estSessions: 3,
+            completedSessions: 1,
+            completed: false,
+          },
+          {
+            id: 'task-2',
+            title: 'Write technical README & deployment documentation',
+            priority: 'medium',
+            block: 'Afternoon',
+            estSessions: 2,
+            completedSessions: 0,
+            completed: false,
+          },
+          {
+            id: 'task-3',
+            title: 'Review GitHub repository structure & Lighthouse audit',
+            priority: 'low',
+            block: 'Evening',
+            estSessions: 1,
+            completedSessions: 1,
+            completed: true,
+          },
+        ],
+      };
+    }
+
+    // Hydrate state from localStorage safely
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return createDefaultState();
+        const parsed = JSON.parse(raw);
+        const base = createDefaultState();
+        return {
+          ...base,
+          ...parsed,
+          settings: { ...base.settings, ...(parsed.settings || {}) },
+          weeklyLog: { ...base.weeklyLog, ...(parsed.weeklyLog || {}) },
+        };
+      } catch (err) {
+        return createDefaultState();
+      }
+    }
+
+    let appState = loadState();
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        // Ignore storage quota errors in restricted sandboxes
+      }
+    }
+
+    // Runtime timer & audio state (non-persisted)
+    const runtime = {
+      mode: 'focus', // 'focus' | 'short' | 'long'
+      remainingSeconds: appState.settings.focusMin * 60,
+      totalSeconds: appState.settings.focusMin * 60,
+      isRunning: false,
+      intervalId: null,
+      ambientMode: 'off',
+    };
+
+    // =========================================================================
+    // 2. WEB AUDIO API ENGINE (CHIMES & AMBIENT SOUNDSCAPES)
+    // =========================================================================
+    const AudioEngine = (() => {
+      let ctx = null;
+      let ambientNodes = [];
+
+      function ensureContext() {
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          ctx = new AudioCtx();
+        }
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        return ctx;
+      }
+
+      // Gentle warm harmonic chime when timer finishes
+      function playCompletionChime() {
+        if (appState.muted) return;
+        try {
+          const audioCtx = ensureContext();
+          const now = audioCtx.currentTime;
+          const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+
+            gain.gain.setValueAtTime(0.0001, now + idx * 0.14);
+            gain.gain.exponentialRampToValueAtTime(0.14, now + idx * 0.14 + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 1.1);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now + idx * 0.14);
+            osc.stop(now + idx * 0.14 + 1.15);
+          });
+        } catch (e) {
+          // Graceful fallback if audio blocked
+        }
+      }
+
+      function stopAmbient() {
+        ambientNodes.forEach(node => {
+          try {
+            if (node.stop) node.stop();
+            if (node.disconnect) node.disconnect();
+          } catch (e) {}
+        });
+        ambientNodes = [];
+      }
+
+      function startAmbient(type) {
+        stopAmbient();
+        if (type === 'off') return;
+
+        try {
+          const audioCtx = ensureContext();
+          const masterGain = audioCtx.createGain();
+          masterGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          masterGain.connect(audioCtx.destination);
+          ambientNodes.push(masterGain);
+
+          if (type === 'rain' || type === 'brown') {
+            // Generate 3-second noise buffer
+            const bufferSize = audioCtx.sampleRate * 3;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            let lastOut = 0.0;
+
+            for (let i = 0; i < bufferSize; i++) {
+              const white = Math.random() * 2 - 1;
+              if (type === 'brown') {
+                data[i] = (lastOut + 0.02 * white) / 1.02;
+                lastOut = data[i];
+                data[i] *= 2.8;
+              } else {
+                data[i] = white * 0.45;
+              }
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            noise.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = type === 'rain' ? 950 : 320;
+
+            noise.connect(filter);
+            filter.connect(masterGain);
+            noise.start();
+            ambientNodes.push(noise, filter);
+          } else if (type === 'binaural') {
+            // Subtle 200Hz & 240Hz (40Hz Gamma focus beat)
+            const oscL = audioCtx.createOscillator();
+            const oscR = audioCtx.createOscillator();
+            oscL.type = 'sine';
+            oscR.type = 'sine';
+            oscL.frequency.value = 200;
+            oscR.frequency.value = 240;
+
+            masterGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            oscL.connect(masterGain);
+            oscR.connect(masterGain);
+            oscL.start();
+            oscR.start();
+            ambientNodes.push(oscL, oscR);
+          }
+        } catch (e) {
+          showToast('Audio playback requires user interaction.');
+        }
+      }
+
+      return { playCompletionChime, startAmbient, stopAmbient };
+    })();
+
+    // =========================================================================
+    // 3. TIMER & MODE CONTROLLER
+    // =========================================================================
+
+    function formatClock(totalSecs) {
+      const m = String(Math.floor(totalSecs / 60)).padStart(2, '0');
+      const s = String(totalSecs % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function getModeDurationSeconds(mode) {
+      if (mode === 'focus') return appState.settings.focusMin * 60;
+      if (mode === 'short') return appState.settings.shortMin * 60;
+      return appState.settings.longMin * 60;
+    }
+
+    function switchTimerMode(mode) {
+      pauseTimer();
+      runtime.mode = mode;
+      runtime.totalSeconds = getModeDurationSeconds(mode);
+      runtime.remainingSeconds = runtime.totalSeconds;
+      updateTimerUI();
+    }
+
+    function startTimer() {
+      if (runtime.isRunning) return;
+      runtime.isRunning = true;
+      updateTimerUI();
+
+      runtime.intervalId = setInterval(() => {
+        if (runtime.remainingSeconds > 0) {
+          runtime.remainingSeconds--;
+          updateTimerUI();
+        } else {
+          completeCurrentSession();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      runtime.isRunning = false;
+      if (runtime.intervalId) {
+        clearInterval(runtime.intervalId);
+        runtime.intervalId = null;
+      }
+      updateTimerUI();
+    }
+
+    function toggleTimer() {
+      if (runtime.isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      runtime.totalSeconds = getModeDurationSeconds(runtime.mode);
+      runtime.remainingSeconds = runtime.totalSeconds;
+      updateTimerUI();
+    }
+
+    function completeCurrentSession() {
+      pauseTimer();
+      AudioEngine.playCompletionChime();
+
+      if (runtime.mode === 'focus') {
+        const loggedMin = appState.settings.focusMin;
+        const today = getTodayKey();
+        appState.weeklyLog[today] = (appState.weeklyLog[today] || 0) + loggedMin;
+        appState.sessionsToday += 1;
+
+        // Increment completed Pomodoro count on linked task
+        if (appState.activeTaskId) {
+          const task = appState.tasks.find(t => t.id === appState.activeTaskId);
+          if (task) {
+            task.completedSessions += 1;
+          }
+        }
+
+        saveState();
+        renderKPIs();
+        renderWeeklyChart();
+        renderTasks();
+        showToast(`Focus session complete! +${loggedMin}m logged.`);
+
+        // Auto-transition to Short Break
+        switchTimerMode('short');
+      } else {
+        showToast('Break finished! Ready for your next focus block.');
+        switchTimerMode('focus');
+      }
+    }
+
+    function updateTimerUI() {
+      // Readout & Document Title
+      const clockStr = formatClock(runtime.remainingSeconds);
+      document.getElementById('timer-readout').textContent = clockStr;
+      document.title = runtime.isRunning ? `(${clockStr}) ChronosFlow` : 'ChronosFlow — Productivity Dashboard';
+
+      // Progress Ring Offset
+      const ring = document.getElementById('timer-progress-ring');
+      const ratio = runtime.totalSeconds > 0 ? runtime.remainingSeconds / runtime.totalSeconds : 1;
+      const offset = RING_CIRCUMFERENCE * (1 - ratio);
+      ring.style.strokeDashoffset = offset;
+
+      // Color Accent per Mode
+      const modeLabel = document.getElementById('timer-mode-label');
+      const statusDot = document.getElementById('timer-status-dot');
+      if (runtime.mode === 'focus') {
+        ring.setAttribute('class', 'progress-ring__circle stroke-indigo-600 dark:stroke-indigo-500');
+        modeLabel.textContent = 'Deep Focus';
+      } else if (runtime.mode === 'short') {
+        ring.setAttribute('class', 'progress-ring__circle stroke-emerald-500');
+        modeLabel.textContent = 'Short Break';
+      } else {
+        ring.setAttribute('class', 'progress-ring__circle stroke-sky-500');
+        modeLabel.textContent = 'Long Break';
+      }
+
+      // Live status indicator
+      if (runtime.isRunning) {
+        statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-live-dot';
+        document.getElementById('icon-timer-play').classList.add('hidden');
+        document.getElementById('icon-timer-pause').classList.remove('hidden');
+        document.getElementById('label-timer-toggle').textContent = 'Pause';
+      } else {
+        statusDot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        document.getElementById('icon-timer-play').classList.remove('hidden');
+        document.getElementById('icon-timer-pause').classList.add('hidden');
+        document.getElementById('label-timer-toggle').textContent = runtime.mode === 'focus' ? 'Start Focus' : 'Start Break';
+      }
+
+      // Mode Tab Highlighting
+      document.querySelectorAll('.mode-tab').forEach(btn => {
+        const active = btn.dataset.mode === runtime.mode;
+        btn.className = active
+          ? 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition'
+          : 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
+      });
+
+      // Linked Task Banner
+      const activeTask = appState.tasks.find(t => t.id === appState.activeTaskId);
+      const taskTitleEl = document.getElementById('active-task-title');
+      const unlinkBtn = document.getElementById('btn-unlink-task');
+      if (activeTask) {
+        taskTitleEl.textContent = activeTask.title;
+        unlinkBtn.classList.remove('hidden');
+      } else {
+        taskTitleEl.textContent = 'Select a task from your queue →';
+        unlinkBtn.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 4. TASK & TIME-BLOCK MANAGER
+    // =========================================================================
+
+    function addTask(title, priority, block, estSessions) {
+      const newTask = {
+        id: 'task-' + Date.now(),
+        title: title.trim(),
+        priority,
+        block,
+        estSessions: Math.max(1, parseInt(estSessions, 10) || 1),
+        completedSessions: 0,
+        completed: false,
+      };
+      appState.tasks.unshift(newTask);
+      if (!appState.activeTaskId) {
+        appState.activeTaskId = newTask.id;
+      }
+      saveState();
+      renderTasks();
+      renderKPIs();
+      updateTimerUI();
+    }
+
+    function toggleTaskComplete(id) {
+      const task = appState.tasks.find(t => t.id === id);
+      if (!task) return;
+      task.completed = !task.completed;
+      saveState();
+      renderTasks();
+      renderKPIs();
+    }
+
+    function deleteTask(id) {
+      appState.tasks = appState.tasks.filter(t => t.id !== id);
+      if (appState.activeTaskId === id) {
+        const nextActive = appState.tasks.find(t => !t.completed);
+        appState.activeTaskId = nextActive ? nextActive.id : null;
+      }
+      saveState();
+      renderTasks();
+      renderKPIs();
+      updateTimerUI();
+    }
+
+    function selectActiveTask(id) {
+      appState.activeTaskId = id;
+      saveState();
+      renderTasks();
+      updateTimerUI();
+    }
+
+    function getPriorityBadgeHTML(priority) {
+      if (priority === 'high') {
+        return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200/70 dark:border-rose-800/70">High</span>';
+      }
+      if (priority === 'medium') {
+        return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/70 dark:border-amber-800/70">Medium</span>';
+      }
+      return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200/70 dark:border-sky-800/70">Low</span>';
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('task-list-container');
+      container.innerHTML = '';
+
+      // Filter tabs styling
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const isCurrent = btn.dataset.filter === appState.filter;
+        btn.className = isCurrent
+          ? 'filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition'
+          : 'filter-btn px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
+      });
+
+      const filtered = appState.tasks.filter(t => {
+        if (appState.filter === 'active') return !t.completed;
+        if (appState.filter === 'completed') return t.completed;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above to structure your day.</p>
+          </div>
+        `;
+      } else {
+        filtered.forEach(task => {
+          const isLinked = task.id === appState.activeTaskId;
+          const card = document.createElement('div');
+          card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
+            isLinked
+              ? 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-400 dark:border-indigo-500/70'
+              : 'bg-white dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          }`;
+
+          card.innerHTML = `
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <button type="button" data-action="toggle" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition ${
+                task.completed
+                  ? 'bg-emerald-500 border-emerald-500 text-white'
+                  : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500'
+              }" aria-label="Toggle Complete">
+                ${task.completed ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+              </button>
+
+              <div class="min-w-0 flex-1">
+                <div class="text-sm font-medium leading-snug ${
+                  task.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'
+                }">
+                  ${escapeHTML(task.title)}
+                </div>
+                <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                  ${getPriorityBadgeHTML(task.priority)}
+                  <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    ${escapeHTML(task.block)}
+                  </span>
+                  ${isLinked ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active Focus</span>' : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 font-mono text-xs font-semibold text-slate-600 dark:text-slate-300" title="Completed / Estimated Focus Sessions">
+                ${task.completedSessions}/${task.estSessions}
+              </span>
+              <button type="button" data-action="delete" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition" title="Delete Task">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          `;
+
+          card.addEventListener('click', (e) => {
+            const actionBtn = e.target.closest('button[data-action]');
+            if (actionBtn) {
+              e.stopPropagation();
+              const act = actionBtn.dataset.action;
+              if (act === 'toggle') toggleTaskComplete(task.id);
+              if (act === 'delete') deleteTask(task.id);
+              return;
+            }
+            selectActiveTask(task.id);
+          });
+
+          container.appendChild(card);
+        });
+      }
+
+      // Update footer workload estimate
+      const remainingSessions = appState.tasks
+        .filter(t => !t.completed)
+        .reduce((acc, t) => acc + Math.max(0, t.estSessions - t.completedSessions), 0);
+      const estMinutes = remainingSessions * appState.settings.focusMin;
+      document.getElementById('footer-pomodoro-summary').textContent =
+        `Remaining workload: ${remainingSessions} sessions (~${estMinutes}m)`;
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // =========================================================================
+    // 5. KPI CARDS & 7-DAY ANALYTICS RENDERING
+    // =========================================================================
+
+    function renderKPIs() {
+      const todayMin = appState.weeklyLog[getTodayKey()] || 0;
+      const goalMin = appState.settings.dailyGoalMin;
+      const pct = Math.min(100, Math.round((todayMin / goalMin) * 100));
+
+      document.getElementById('kpi-focus-time').textContent =
+        todayMin >= 60 ? `${(todayMin / 60).toFixed(1)}h` : `${todayMin}m`;
+      document.getElementById('kpi-sessions-count').textContent =
+        `${appState.sessionsToday} session${appState.sessionsToday === 1 ? '' : 's'} logged today`;
+
+      document.getElementById('kpi-goal-percent').textContent = `${pct}%`;
+      document.getElementById('kpi-goal-fraction').textContent = `${todayMin} / ${goalMin}m`;
+      document.getElementById('kpi-goal-bar').style.width = `${pct}%`;
+
+      const totalTasks = appState.tasks.length;
+      const doneTasks = appState.tasks.filter(t => t.completed).length;
+      document.getElementById('kpi-tasks-done').textContent = `${doneTasks} / ${totalTasks}`;
+      document.getElementById('kpi-tasks-pending').textContent = `${totalTasks - doneTasks} remaining in queue`;
+
+      document.getElementById('kpi-streak-days').textContent = `${appState.streakDays} Days`;
+    }
+
+    function renderWeeklyChart() {
+      const container = document.getElementById('weekly-chart-container');
+      container.innerHTML = '';
+
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const days = [];
+      let totalWeekMinutes = 0;
+      let maxVal = Math.max(60, appState.settings.dailyGoalMin);
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = getTodayKey(-i);
+        const mins = appState.weeklyLog[key] || 0;
+        totalWeekMinutes += mins;
+        if (mins > maxVal) maxVal = mins;
+        days.push({
+          label: dayNames[d.getDay()],
+          mins,
+          isToday: i === 0,
+        });
+      }
+
+      document.getElementById('weekly-total-badge').textContent = `${totalWeekMinutes}m total`;
+
+      days.forEach(item => {
+        const heightPct = Math.max(6, Math.round((item.mins / maxVal) * 100));
+        const col = document.createElement('div');
+        col.className = 'flex-1 h-full flex flex-col items-center justify-end gap-1.5 group';
+        col.innerHTML = `
+          <span class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 opacity-80 group-hover:opacity-100">
+            ${item.mins}m
+          </span>
+          <div class="w-full max-w-[34px] flex-1 flex items-end bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-hidden p-0.5">
+            <div
+              class="w-full rounded-lg transition-all duration-500 ${
+                item.isToday
+                  ? 'bg-indigo-600 dark:bg-indigo-500'
+                  : 'bg-indigo-300 dark:bg-indigo-800/90 group-hover:bg-indigo-400'
+              }"
+              style="height: ${heightPct}%"
+            ></div>
+          </div>
+          <span class="text-[11px] font-semibold ${
+            item.isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
+          }">
+            ${item.label}
+          </span>
+        `;
+        container.appendChild(col);
+      });
+    }
+
+    // =========================================================================
+    // 6. THEME, SOUNDSCAPE UI & EVENT LISTENERS
+    // =========================================================================
+
+    function applyTheme(theme) {
+      appState.theme = theme;
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      saveState();
+    }
+
+    function updateSoundscapeButtons() {
+      const labels = {
+        off: 'Off',
+        rain: 'Soft Rain Active',
+        brown: 'Deep Noise Active',
+        binaural: '40Hz Gamma Active',
+      };
+      document.getElementById('ambient-status-text').textContent = labels[runtime.ambientMode] || 'Off';
+
+      document.querySelectorAll('.sound-btn').forEach(btn => {
+        const active = btn.dataset.sound === runtime.ambientMode;
+        btn.className = active
+          ? 'sound-btn py-2 px-2 rounded-xl text-xs font-semibold border border-indigo-500 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 transition'
+          : 'sound-btn py-2 px-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition';
+      });
+    }
+
+    function updateMuteIcon() {
+      document.getElementById('icon-vol-on').classList.toggle('hidden', appState.muted);
+      document.getElementById('icon-vol-off').classList.toggle('hidden', !appState.muted);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const banner = document.getElementById('toast-banner');
+      document.getElementById('toast-message').textContent = msg;
+      banner.classList.remove('opacity-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => banner.classList.add('opacity-0'), 2400);
+    }
+
+    function openSettingsModal() {
+      document.getElementById('set-focus-min').value = appState.settings.focusMin;
+      document.getElementById('set-short-min').value = appState.settings.shortMin;
+      document.getElementById('set-long-min').value = appState.settings.longMin;
+      document.getElementById('set-daily-goal').value = appState.settings.dailyGoalMin;
+      document.getElementById('modal-settings').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('modal-settings').classList.add('hidden');
+    }
+
+    // Bind DOM Events
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+      applyTheme(appState.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    document.getElementById('btn-mute-toggle').addEventListener('click', () => {
+      appState.muted = !appState.muted;
+      saveState();
+      updateMuteIcon();
+      showToast(appState.muted ? 'Completion chimes muted' : 'Completion chimes enabled');
+    });
+
+    document.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTimerMode(btn.dataset.mode));
+    });
+
+    document.getElementById('btn-timer-toggle').addEventListener('click', toggleTimer);
+    document.getElementById('btn-timer-reset').addEventListener('click', resetTimer);
+    document.getElementById('btn-timer-skip').addEventListener('click', completeCurrentSession);
+
+    document.getElementById('btn-unlink-task').addEventListener('click', () => {
+      appState.activeTaskId = null;
+      saveState();
+      renderTasks();
+      updateTimerUI();
+    });
+
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        runtime.ambientMode = btn.dataset.sound;
+        AudioEngine.startAmbient(runtime.ambientMode);
+        updateSoundscapeButtons();
+      });
+    });
+
+    // Task Form & Filters
+    document.getElementById('form-add-task').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('input-task-title');
+      if (!input.value.trim()) return;
+      addTask(
+        input.value,
+        document.getElementById('select-task-priority').value,
+        document.getElementById('select-task-block').value,
+        document.getElementById('input-task-est').value
+      );
+      input.value = '';
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        appState.filter = btn.dataset.filter;
+        saveState();
+        renderTasks();
+      });
+    });
+
+    document.getElementById('btn-clear-completed').addEventListener('click', () => {
+      appState.tasks = appState.tasks.filter(t => !t.completed);
+      saveState();
+      renderTasks();
+      renderKPIs();
+      showToast('Cleared completed tasks');
+    });
+
+    document.getElementById('btn-reset-demo').addEventListener('click', () => {
+      const currentTheme = appState.theme;
+      appState = createDefaultState();
+      appState.theme = currentTheme;
+      saveState();
+      switchTimerMode('focus');
+      renderKPIs();
+      renderWeeklyChart();
+      renderTasks();
+      showToast('Sample portfolio data restored');
+    });
+
+    // Settings Modal
+    document.getElementById('btn-open-settings').addEventListener('click', openSettingsModal);
+    document.getElementById('btn-edit-goal').addEventListener('click', openSettingsModal);
+    document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
+
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const [f, s, l] = chip.dataset.preset.split(',');
+        document.getElementById('set-focus-min').value = f;
+        document.getElementById('set-short-min').value = s;
+        document.getElementById('set-long-min').value = l;
+      });
+    });
+
+    document.getElementById('form-settings').addEventListener('submit', (e) => {
+      e.preventDefault();
+      appState.settings.focusMin = Math.max(1, parseInt(document.getElementById('set-focus-min').value, 10) || 25);
+      appState.settings.shortMin = Math.max(1, parseInt(document.getElementById('set-short-min').value, 10) || 5);
+      appState.settings.longMin = Math.max(1, parseInt(document.getElementById('set-long-min').value, 10) || 15);
+      appState.settings.dailyGoalMin = Math.max(15, parseInt(document.getElementById('set-daily-goal').value, 10) || 120);
+      saveState();
+      closeSettingsModal();
+      resetTimer();
+      renderKPIs();
+      renderTasks();
+      showToast('Timer & goal settings updated');
+    });
+
+    // Keyboard Shortcut: Spacebar toggles timer when not typing in an input
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimer();
+      }
+    });
+
+    // Initial Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      // Display formatted current date
+      const dateStr = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      });
+      document.getElementById('header-date-display').textContent = dateStr;
+
+      applyTheme(appState.theme);
+      updateMuteIcon();
+      updateSoundscapeButtons();
+      switchTimerMode('focus');
+      renderKPIs();
+      renderWeeklyChart();
+      renderTasks();
+    });
+  </script>
+</body>
+</html>
