@@ -253,12 +253,14 @@
             </div>
           </div>
 
-          <!-- Active Task Banner (Linked Task — Auto-checks when timer completes!) -->
+          <!-- Active Task Banner (Linked Task) -->
           <div class="w-full mb-5 px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-2 text-left">
-            <div class="min-w-0">
-              <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                <span>Working On</span>
-                <span class="text-[9px] font-normal text-slate-400 dark:text-slate-500">(Auto-checks on finish)</span>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                  Working On
+                </span>
+                <span id="active-task-sessions-left" class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400"></span>
               </div>
               <div id="active-task-title" class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate mt-0.5">
                 Select a task from your queue →
@@ -284,7 +286,7 @@
               <span id="label-timer-toggle">Start Focus</span>
             </button>
 
-            <button id="btn-timer-skip" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Complete Session &amp; Auto-Check Task">
+            <button id="btn-timer-skip" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Finish Session Now &amp; Update Task">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <polygon points="5 4 15 12 5 20 5 4"></polygon>
                 <line x1="19" y1="5" x2="19" y2="19"></line>
@@ -310,7 +312,7 @@
           </div>
         </section>
 
-        <!-- Weekly Focus Analytics Card (Interactive: Click any day bar to inspect completed tasks!) -->
+        <!-- Weekly Focus Analytics Card -->
         <section class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div class="flex items-center justify-between mb-4">
             <div>
@@ -327,7 +329,6 @@
             </span>
           </div>
 
-          <!-- 7-Day Interactive Bar Chart -->
           <div id="weekly-chart-container" class="h-36 pt-4 flex items-end justify-between gap-2 sm:gap-3">
             <!-- Rendered dynamically via JS -->
           </div>
@@ -341,7 +342,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Click a task to link with timer • Auto-checks when timer finishes</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with timer • Remaining sessions decrease per completed timer</p>
           </div>
 
           <!-- Status Filter Tabs -->
@@ -369,7 +370,6 @@
             </button>
           </div>
 
-          <!-- Task Metadata Controls: Priority, Time Block, Est. Pomodoros -->
           <div class="flex flex-wrap items-center gap-2 text-xs">
             <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
               <span class="text-slate-400">Priority:</span>
@@ -391,7 +391,7 @@
             </label>
 
             <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
-              <span class="text-slate-400">Est. Sessions:</span>
+              <span class="text-slate-400">Sessions:</span>
               <input id="input-task-est" type="number" min="1" max="10" value="1" class="w-10 bg-transparent font-mono font-semibold text-slate-700 dark:text-slate-200 focus:outline-none text-center" />
             </label>
           </div>
@@ -416,7 +416,7 @@
   </main>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 1: DAILY FOCUS BREAKDOWN (CLICKED FROM WEEKLY FOCUS OUTPUT)     -->
+  <!-- MODAL 1: DAILY FOCUS BREAKDOWN                                        -->
   <!-- ===================================================================== -->
   <div id="modal-day-detail" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
@@ -433,10 +433,7 @@
         </button>
       </div>
 
-      <!-- List of Completed / Worked Tasks on that Day -->
-      <div id="day-detail-list" class="space-y-2.5 max-h-72 overflow-y-auto custom-scroll pr-1">
-        <!-- Populated dynamically -->
-      </div>
+      <div id="day-detail-list" class="space-y-2.5 max-h-72 overflow-y-auto custom-scroll pr-1"></div>
 
       <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
         <button id="btn-done-day-detail" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold hover:opacity-90 transition">
@@ -447,7 +444,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 2: CUSTOMIZATION MODAL (TIMER INTERVALS & DAILY GOAL)           -->
+  <!-- MODAL 2: CUSTOMIZATION MODAL                                          -->
   <!-- ===================================================================== -->
   <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
@@ -505,7 +502,7 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v2';
+    const STORAGE_KEY = 'chronosflow_persistent_v3';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     function getTodayKey(offsetDays = 0) {
@@ -571,6 +568,10 @@
         };
       }
       return appState.dailyHistory[dateKey];
+    }
+
+    function getRemainingSessions(task) {
+      return Math.max(0, (task.estSessions || 1) - (task.completedSessions || 0));
     }
 
     function calculateStreak() {
@@ -721,7 +722,7 @@
     })();
 
     // =========================================================================
-    // TIMER CONTROLLER (AUTO-CHECKS LINKED TASK ON COMPLETION)
+    // TIMER CONTROLLER (DECREASES SESSIONS & AUTO-CHECKS COMPLETED TASK)
     // =========================================================================
 
     function formatClock(totalSecs) {
@@ -805,12 +806,25 @@
         dayRecord.minutes += loggedMin;
         dayRecord.sessions += 1;
 
-        const linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
+        // Find linked task (even if previously marked completed, re-open if user runs it again)
+        let linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId);
+        if (!linkedTask) {
+          linkedTask = appState.tasks.find(t => !t.completed) || null;
+          if (linkedTask) appState.activeTaskId = linkedTask.id;
+        }
+
         if (linkedTask) {
-          // Increment session count and automatically mark the linked task as checked/completed
-          linkedTask.completedSessions = Math.max(linkedTask.completedSessions + 1, linkedTask.estSessions);
-          linkedTask.completed = true;
-          linkedTask.completedDate = today;
+          linkedTask.completedSessions = (linkedTask.completedSessions || 0) + 1;
+          const leftAfterSession = getRemainingSessions(linkedTask);
+          const isNowFinished = leftAfterSession <= 0;
+
+          if (isNowFinished) {
+            linkedTask.completed = true;
+            linkedTask.completedDate = today;
+          } else {
+            linkedTask.completed = false;
+            linkedTask.completedDate = null;
+          }
 
           dayRecord.entries.unshift({
             taskId: linkedTask.id,
@@ -818,15 +832,17 @@
             priority: linkedTask.priority,
             block: linkedTask.block,
             minutes: loggedMin,
-            status: 'completed',
+            status: isNowFinished ? 'completed' : 'session_logged',
             timestamp: formatTimeNow(),
           });
 
-          // Automatically advance Active Focus to the next uncompleted task
-          const nextTask = appState.tasks.find(t => !t.completed && t.id !== linkedTask.id);
-          appState.activeTaskId = nextTask ? nextTask.id : null;
-
-          showToast(`"${linkedTask.title}" auto-checked & logged (+${loggedMin}m)!`);
+          if (isNowFinished) {
+            const nextTask = appState.tasks.find(t => !t.completed && t.id !== linkedTask.id);
+            appState.activeTaskId = nextTask ? nextTask.id : null;
+            showToast(`"${linkedTask.title}" selesai & otomatis tercentang! (+${loggedMin}m)`);
+          } else {
+            showToast(`1 sesi selesai! Sisa ${leftAfterSession} sesi lagi untuk "${linkedTask.title}".`);
+          }
         } else {
           dayRecord.entries.unshift({
             taskId: null,
@@ -898,27 +914,32 @@
 
       const activeTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
       const taskTitleEl = document.getElementById('active-task-title');
+      const sessionsLeftEl = document.getElementById('active-task-sessions-left');
       const unlinkBtn = document.getElementById('btn-unlink-task');
       if (activeTask) {
+        const left = getRemainingSessions(activeTask);
         taskTitleEl.textContent = activeTask.title;
+        sessionsLeftEl.textContent = `${left} session${left === 1 ? '' : 's'} left`;
         unlinkBtn.classList.remove('hidden');
       } else {
         taskTitleEl.textContent = 'Select a task from your queue →';
+        sessionsLeftEl.textContent = '';
         unlinkBtn.classList.add('hidden');
       }
     }
 
     // =========================================================================
-    // PRIORITY TASK MANAGER (PERMANENT & SYNCED WITH WEEKLY FOCUS)
+    // PRIORITY TASK MANAGER
     // =========================================================================
 
     function addTask(title, priority, block, estSessions) {
+      const parsedEst = Math.max(1, parseInt(estSessions, 10) || 1);
       const newTask = {
         id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         title: title.trim(),
         priority,
         block,
-        estSessions: Math.max(1, parseInt(estSessions, 10) || 1),
+        estSessions: parsedEst,
         completedSessions: 0,
         completed: false,
         completedDate: null,
@@ -932,7 +953,7 @@
       renderTasks();
       renderKPIs();
       updateTimerUI();
-      showToast('Task saved & linked to timer');
+      showToast(`Task ditambahkan (${parsedEst} sesi)`);
     }
 
     function toggleTaskComplete(id) {
@@ -945,9 +966,7 @@
 
       if (task.completed) {
         task.completedDate = today;
-        if (task.completedSessions < task.estSessions) {
-          task.completedSessions = task.estSessions;
-        }
+        task.completedSessions = task.estSessions;
 
         const alreadyCompletedEntry = dayRecord.entries.find(
           e => e.taskId === task.id && e.status === 'completed'
@@ -982,6 +1001,8 @@
 
         showToast('Task completed & synced to Weekly Focus!');
       } else {
+        // Restore 1 remaining session when manually unchecked
+        task.completedSessions = Math.max(0, task.estSessions - 1);
         const prevDate = task.completedDate || today;
         const targetDay = appState.dailyHistory[prevDate];
         if (targetDay) {
@@ -1001,9 +1022,7 @@
           }
         }
         task.completedDate = null;
-        if (!appState.activeTaskId) {
-          appState.activeTaskId = task.id;
-        }
+        appState.activeTaskId = task.id;
       }
 
       saveState();
@@ -1051,6 +1070,7 @@
       saveState();
       renderTasks();
       updateTimerUI();
+      showToast(`"${task.title}" terhubung ke timer`);
     }
 
     function getPriorityBadgeHTML(priority) {
@@ -1090,12 +1110,17 @@
         container.innerHTML = `
           <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — it saves permanently and auto-checks when the timer ends.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — sisa sesi akan berkurang tiap timer selesai.</p>
           </div>
         `;
       } else {
         filtered.forEach(task => {
           const isLinked = task.id === appState.activeTaskId && !task.completed;
+          const sessionsLeft = getRemainingSessions(task);
+          const sessionBadgeText = task.completed
+            ? `Done (${task.completedSessions}/${task.estSessions})`
+            : `${sessionsLeft} left (${task.completedSessions}/${task.estSessions})`;
+
           const card = document.createElement('div');
           card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
             task.completed ? 'cursor-default opacity-80' : 'cursor-pointer'
@@ -1128,14 +1153,18 @@
                     ${escapeHTML(task.block)}
                   </span>
                   ${isLinked ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active in Timer</span>' : ''}
-                  ${task.completed && task.completedDate ? `<span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">✓ Done (${task.completedDate})</span>` : ''}
+                  ${task.completed && task.completedDate ? `<span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">✓ Checked (${task.completedDate})</span>` : ''}
                 </div>
               </div>
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
-              <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 font-mono text-xs font-semibold text-slate-600 dark:text-slate-300" title="Completed / Estimated Focus Sessions">
-                ${task.completedSessions}/${task.estSessions}
+              <span class="px-2 py-1 rounded-lg font-mono text-xs font-semibold ${
+                task.completed
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+              }" title="Sisa Sesi / (Sesi Selesai / Total Sesi)">
+                ${sessionBadgeText}
               </span>
               <button type="button" data-action="edit" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition" title="Edit Task">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -1165,7 +1194,7 @@
 
       const remainingSessions = appState.tasks
         .filter(t => !t.completed)
-        .reduce((acc, t) => acc + Math.max(0, t.estSessions - t.completedSessions), 0);
+        .reduce((acc, t) => acc + getRemainingSessions(t), 0);
       const estMinutes = remainingSessions * appState.settings.focusMin;
       document.getElementById('footer-pomodoro-summary').textContent =
         `Remaining workload: ${remainingSessions} sessions (~${estMinutes}m)`;
