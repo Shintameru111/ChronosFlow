@@ -37,20 +37,17 @@
   </script>
 
   <style>
-    /* Base Typography & Scrollbar Polish */
     body {
       font-family: 'Inter', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Circular SVG Progress Ring Transition */
     .progress-ring__circle {
       transition: stroke-dashoffset 0.45s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
     }
 
-    /* Subtle Pulse Animation for Active Focus Session */
     @keyframes gentlePulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.55; transform: scale(1.15); }
@@ -59,7 +56,6 @@
       animation: gentlePulse 2.2s infinite ease-in-out;
     }
 
-    /* Custom Scrollbar for Task List */
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
     }
@@ -158,7 +154,7 @@
         </div>
         <div class="mt-3">
           <div id="kpi-focus-time" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">0m</div>
-          <p id="kpi-sessions-count" class="text-xs text-slate-500 dark:text-slate-400 mt-1">0 sessions completed</p>
+          <p id="kpi-sessions-count" class="text-xs text-slate-500 dark:text-slate-400 mt-1">0 sessions logged today</p>
         </div>
       </div>
 
@@ -202,8 +198,8 @@
           </span>
         </div>
         <div class="mt-3">
-          <div id="kpi-streak-days" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">4 Days</div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Consistent deep work</p>
+          <div id="kpi-streak-days" class="text-2xl sm:text-3xl font-mono font-bold tracking-tight">0 Days</div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Consecutive active days</p>
         </div>
       </div>
     </section>
@@ -227,14 +223,12 @@
           <!-- Circular SVG Progress Timer -->
           <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-6 flex items-center justify-center">
             <svg class="w-full h-full" viewBox="0 0 220 220">
-              <!-- Track Circle -->
               <circle
                 cx="110" cy="110" r="96"
                 fill="none"
                 stroke-width="10"
                 class="stroke-slate-100 dark:stroke-slate-800"
               />
-              <!-- Active Progress Ring -->
               <circle
                 id="timer-progress-ring"
                 cx="110" cy="110" r="96"
@@ -247,7 +241,6 @@
               />
             </svg>
 
-            <!-- Center Digital Readout -->
             <div class="absolute inset-0 flex flex-col items-center justify-center">
               <div class="flex items-center gap-1.5 mb-1">
                 <span id="timer-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
@@ -288,7 +281,7 @@
               <span id="label-timer-toggle">Start Focus</span>
             </button>
 
-            <button id="btn-timer-skip" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Complete &amp; Skip Session">
+            <button id="btn-timer-skip" class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition" title="Complete &amp; Log Session Now">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <polygon points="5 4 15 12 5 20 5 4"></polygon>
                 <line x1="19" y1="5" x2="19" y2="19"></line>
@@ -296,7 +289,7 @@
             </button>
           </div>
 
-          <!-- Synthesized Ambient Soundscape Bar (Web Audio API) -->
+          <!-- Synthesized Ambient Soundscape Bar -->
           <div class="w-full mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
             <div class="flex items-center justify-between mb-2.5">
               <span class="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
@@ -314,19 +307,24 @@
           </div>
         </section>
 
-        <!-- Weekly Focus Analytics Card -->
+        <!-- Weekly Focus Analytics Card (Interactive: Click any day bar to inspect completed tasks!) -->
         <section class="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-sm font-bold">Weekly Focus Output</h2>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Minutes logged over the last 7 days</p>
+              <h2 class="text-sm font-bold flex items-center gap-1.5">
+                Weekly Focus Output
+                <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                  Click a day
+                </span>
+              </h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Click any bar to view tasks logged &amp; completed</p>
             </div>
             <span id="weekly-total-badge" class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-mono text-xs font-semibold">
               0m total
             </span>
           </div>
 
-          <!-- 7-Day Bar Chart -->
+          <!-- 7-Day Interactive Bar Chart -->
           <div id="weekly-chart-container" class="h-36 pt-4 flex items-end justify-between gap-2 sm:gap-3">
             <!-- Rendered dynamically via JS -->
           </div>
@@ -340,7 +338,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Click any task to link it with the active focus timer</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Saved automatically • Completed tasks sync to Weekly Focus</p>
           </div>
 
           <!-- Status Filter Tabs -->
@@ -403,11 +401,11 @@
 
         <!-- Footer Bulk Actions -->
         <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <span id="footer-pomodoro-summary">Estimated workload: 0 sessions</span>
+          <span id="footer-pomodoro-summary">Remaining workload: 0 sessions</span>
           <div class="flex items-center gap-3">
-            <button id="btn-clear-completed" class="hover:text-rose-600 dark:hover:text-rose-400 font-medium transition">Clear Completed</button>
+            <button id="btn-clear-completed" class="hover:text-rose-600 dark:hover:text-rose-400 font-medium transition">Clear Completed List</button>
             <span>•</span>
-            <button id="btn-reset-demo" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition">Restore Sample Data</button>
+            <button id="btn-reset-all" class="hover:text-rose-600 dark:hover:text-rose-400 font-medium transition">Reset All Data</button>
           </div>
         </div>
       </section>
@@ -415,7 +413,38 @@
   </main>
 
   <!-- ===================================================================== -->
-  <!-- CUSTOMIZATION MODAL (TIMER INTERVALS & DAILY GOAL)                    -->
+  <!-- MODAL 1: DAILY FOCUS BREAKDOWN (CLICKED FROM WEEKLY FOCUS OUTPUT)     -->
+  <!-- ===================================================================== -->
+  <div id="modal-day-detail" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+            Daily Activity Log
+          </span>
+          <h2 id="day-detail-title" class="text-lg font-bold mt-1.5">Sunday, Nov 22</h2>
+          <p id="day-detail-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">0m total focus • 0 tasks logged</p>
+        </div>
+        <button id="btn-close-day-detail" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- List of Completed / Worked Tasks on that Day -->
+      <div id="day-detail-list" class="space-y-2.5 max-h-72 overflow-y-auto custom-scroll pr-1">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <button id="btn-done-day-detail" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold hover:opacity-90 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: CUSTOMIZATION MODAL (TIMER INTERVALS & DAILY GOAL)           -->
   <!-- ===================================================================== -->
   <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
@@ -429,7 +458,6 @@
         </button>
       </div>
 
-      <!-- Preset Cadence Chips -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-400">Presets:</span>
         <button type="button" data-preset="25,5,15" class="preset-chip px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950 text-xs font-mono font-semibold transition">25 / 5 / 15</button>
@@ -471,23 +499,12 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- APPLICATION LOGIC (MODULAR VANILLA JS + WEB AUDIO SYNTHESIZER)        -->
+  <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    /**
-     * ChronosFlow — Personal Productivity & Time Management Engine
-     * Modules:
-     *  1. StorageService: Handles localStorage state hydration & persistence.
-     *  2. AudioEngine: Zero-dependency Web Audio API synthesizer for gentle
-     *     completion chimes and continuous focus soundscapes (Rain, Deep Noise, 40Hz).
-     *  3. TimerController: High-precision interval countdown with SVG progress ring.
-     *  4. TaskManager & Analytics: Priority tasks, time blocks, and 7-day bar chart.
-     */
-
-    const STORAGE_KEY = 'chronosflow_portfolio_v1';
+    const STORAGE_KEY = 'chronosflow_persistent_v2';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
-    // Helper: Get local YYYY-MM-DD key
     function getTodayKey(offsetDays = 0) {
       const d = new Date();
       d.setDate(d.getDate() + offsetDays);
@@ -497,14 +514,8 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Default starter state for first-time portfolio visitors
-    function createDefaultState() {
-      const weeklyLog = {};
-      const sampleMinutes = [75, 110, 90, 135, 100, 125, 25];
-      for (let i = 6; i >= 0; i--) {
-        weeklyLog[getTodayKey(-i)] = sampleMinutes[6 - i];
-      }
-
+    // Clean, real initial state (0 fake numbers — 100% driven by real user tasks & sessions)
+    function createEmptyState() {
       return {
         theme: 'light',
         muted: false,
@@ -514,58 +525,47 @@
           longMin: 15,
           dailyGoalMin: 120,
         },
-        activeTaskId: 'task-1',
+        activeTaskId: null,
         filter: 'all',
-        streakDays: 4,
-        sessionsToday: 1,
-        weeklyLog, // { 'YYYY-MM-DD': minutesLogged }
-        tasks: [
-          {
-            id: 'task-1',
-            title: 'Architect responsive frontend portfolio components',
-            priority: 'high',
-            block: 'Morning',
-            estSessions: 3,
-            completedSessions: 1,
-            completed: false,
-          },
-          {
-            id: 'task-2',
-            title: 'Write technical README & deployment documentation',
-            priority: 'medium',
-            block: 'Afternoon',
-            estSessions: 2,
-            completedSessions: 0,
-            completed: false,
-          },
-          {
-            id: 'task-3',
-            title: 'Review GitHub repository structure & Lighthouse audit',
-            priority: 'low',
-            block: 'Evening',
-            estSessions: 1,
-            completedSessions: 1,
-            completed: true,
-          },
-        ],
+        /**
+         * dailyHistory: {
+         *   'YYYY-MM-DD': {
+         *     minutes: number,
+         *     sessions: number,
+         *     entries: [
+         *       {
+         *         taskId: string,
+         *         title: string,
+         *         priority: 'high' | 'medium' | 'low',
+         *         block: string,
+         *         minutes: number,
+         *         status: 'completed' | 'session_logged',
+         *         timestamp: string
+         *       }
+         *     ]
+         *   }
+         * }
+         */
+        dailyHistory: {},
+        tasks: [],
       };
     }
 
-    // Hydrate state from localStorage safely
     function loadState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return createDefaultState();
+        if (!raw) return createEmptyState();
         const parsed = JSON.parse(raw);
-        const base = createDefaultState();
+        const base = createEmptyState();
         return {
           ...base,
           ...parsed,
           settings: { ...base.settings, ...(parsed.settings || {}) },
-          weeklyLog: { ...base.weeklyLog, ...(parsed.weeklyLog || {}) },
+          dailyHistory: parsed.dailyHistory || {},
+          tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
         };
       } catch (err) {
-        return createDefaultState();
+        return createEmptyState();
       }
     }
 
@@ -575,22 +575,55 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       } catch (err) {
-        // Ignore storage quota errors in restricted sandboxes
+        showToast('Unable to save to browser storage.');
       }
     }
 
-    // Runtime timer & audio state (non-persisted)
+    function ensureDayRecord(dateKey) {
+      if (!appState.dailyHistory[dateKey]) {
+        appState.dailyHistory[dateKey] = {
+          minutes: 0,
+          sessions: 0,
+          entries: [],
+        };
+      }
+      return appState.dailyHistory[dateKey];
+    }
+
+    // Calculate real consecutive streak from dailyHistory
+    function calculateStreak() {
+      let streak = 0;
+      const todayKey = getTodayKey(0);
+      const todayHasActivity = (appState.dailyHistory[todayKey]?.minutes || 0) > 0;
+      let offset = todayHasActivity ? 0 : -1;
+
+      while (true) {
+        const key = getTodayKey(offset);
+        const dayData = appState.dailyHistory[key];
+        if (dayData && dayData.minutes > 0) {
+          streak++;
+          offset--;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    // Runtime state
     const runtime = {
-      mode: 'focus', // 'focus' | 'short' | 'long'
+      mode: 'focus',
       remainingSeconds: appState.settings.focusMin * 60,
       totalSeconds: appState.settings.focusMin * 60,
+      endTimestamp: null,
       isRunning: false,
       intervalId: null,
       ambientMode: 'off',
+      selectedDetailDate: null,
     };
 
     // =========================================================================
-    // 2. WEB AUDIO API ENGINE (CHIMES & AMBIENT SOUNDSCAPES)
+    // WEB AUDIO API ENGINE
     // =========================================================================
     const AudioEngine = (() => {
       let ctx = null;
@@ -607,13 +640,12 @@
         return ctx;
       }
 
-      // Gentle warm harmonic chime when timer finishes
       function playCompletionChime() {
         if (appState.muted) return;
         try {
           const audioCtx = ensureContext();
           const now = audioCtx.currentTime;
-          const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+          const notes = [523.25, 659.25, 783.99, 1046.5];
 
           notes.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
@@ -631,9 +663,7 @@
             osc.start(now + idx * 0.14);
             osc.stop(now + idx * 0.14 + 1.15);
           });
-        } catch (e) {
-          // Graceful fallback if audio blocked
-        }
+        } catch (e) {}
       }
 
       function stopAmbient() {
@@ -658,7 +688,6 @@
           ambientNodes.push(masterGain);
 
           if (type === 'rain' || type === 'brown') {
-            // Generate 3-second noise buffer
             const bufferSize = audioCtx.sampleRate * 3;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
@@ -688,7 +717,6 @@
             noise.start();
             ambientNodes.push(noise, filter);
           } else if (type === 'binaural') {
-            // Subtle 200Hz & 240Hz (40Hz Gamma focus beat)
             const oscL = audioCtx.createOscillator();
             const oscR = audioCtx.createOscillator();
             oscL.type = 'sine';
@@ -712,7 +740,7 @@
     })();
 
     // =========================================================================
-    // 3. TIMER & MODE CONTROLLER
+    // TIMER CONTROLLER (TIMESTAMP-ACCURATE)
     // =========================================================================
 
     function formatClock(totalSecs) {
@@ -738,20 +766,26 @@
     function startTimer() {
       if (runtime.isRunning) return;
       runtime.isRunning = true;
+      runtime.endTimestamp = Date.now() + runtime.remainingSeconds * 1000;
       updateTimerUI();
 
       runtime.intervalId = setInterval(() => {
-        if (runtime.remainingSeconds > 0) {
-          runtime.remainingSeconds--;
-          updateTimerUI();
-        } else {
+        const secsLeft = Math.max(0, Math.ceil((runtime.endTimestamp - Date.now()) / 1000));
+        runtime.remainingSeconds = secsLeft;
+        updateTimerUI();
+
+        if (secsLeft <= 0) {
           completeCurrentSession();
         }
-      }, 1000);
+      }, 250);
     }
 
     function pauseTimer() {
+      if (runtime.isRunning && runtime.endTimestamp) {
+        runtime.remainingSeconds = Math.max(0, Math.ceil((runtime.endTimestamp - Date.now()) / 1000));
+      }
       runtime.isRunning = false;
+      runtime.endTimestamp = null;
       if (runtime.intervalId) {
         clearInterval(runtime.intervalId);
         runtime.intervalId = null;
@@ -774,6 +808,10 @@
       updateTimerUI();
     }
 
+    function formatTimeNow() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function completeCurrentSession() {
       pauseTimer();
       AudioEngine.playCompletionChime();
@@ -781,25 +819,57 @@
       if (runtime.mode === 'focus') {
         const loggedMin = appState.settings.focusMin;
         const today = getTodayKey();
-        appState.weeklyLog[today] = (appState.weeklyLog[today] || 0) + loggedMin;
-        appState.sessionsToday += 1;
+        const dayRecord = ensureDayRecord(today);
 
-        // Increment completed Pomodoro count on linked task
-        if (appState.activeTaskId) {
-          const task = appState.tasks.find(t => t.id === appState.activeTaskId);
-          if (task) {
-            task.completedSessions += 1;
+        dayRecord.minutes += loggedMin;
+        dayRecord.sessions += 1;
+
+        const linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId);
+        if (linkedTask) {
+          linkedTask.completedSessions += 1;
+          linkedTask.loggedMinutesToday = (linkedTask.loggedMinutesToday || 0) + loggedMin;
+
+          // Auto-mark complete if target sessions reached
+          const reachedTarget = linkedTask.completedSessions >= linkedTask.estSessions;
+          if (reachedTarget && !linkedTask.completed) {
+            linkedTask.completed = true;
+            linkedTask.completedDate = today;
           }
+
+          dayRecord.entries.unshift({
+            taskId: linkedTask.id,
+            title: linkedTask.title,
+            priority: linkedTask.priority,
+            block: linkedTask.block,
+            minutes: loggedMin,
+            status: linkedTask.completed ? 'completed' : 'session_logged',
+            timestamp: formatTimeNow(),
+          });
+
+          if (linkedTask.completed) {
+            const nextTask = appState.tasks.find(t => !t.completed);
+            appState.activeTaskId = nextTask ? nextTask.id : null;
+          }
+        } else {
+          dayRecord.entries.unshift({
+            taskId: null,
+            title: 'Unlinked Deep Focus Session',
+            priority: 'medium',
+            block: 'Anytime',
+            minutes: loggedMin,
+            status: 'session_logged',
+            timestamp: formatTimeNow(),
+          });
         }
 
         saveState();
         renderKPIs();
         renderWeeklyChart();
         renderTasks();
-        showToast(`Focus session complete! +${loggedMin}m logged.`);
+        showToast(`Focus session logged (+${loggedMin}m) into Weekly Output!`);
 
-        // Auto-transition to Short Break
-        switchTimerMode('short');
+        const cycleLong = dayRecord.sessions % 4 === 0;
+        switchTimerMode(cycleLong ? 'long' : 'short');
       } else {
         showToast('Break finished! Ready for your next focus block.');
         switchTimerMode('focus');
@@ -807,18 +877,15 @@
     }
 
     function updateTimerUI() {
-      // Readout & Document Title
       const clockStr = formatClock(runtime.remainingSeconds);
       document.getElementById('timer-readout').textContent = clockStr;
       document.title = runtime.isRunning ? `(${clockStr}) ChronosFlow` : 'ChronosFlow — Productivity Dashboard';
 
-      // Progress Ring Offset
       const ring = document.getElementById('timer-progress-ring');
       const ratio = runtime.totalSeconds > 0 ? runtime.remainingSeconds / runtime.totalSeconds : 1;
       const offset = RING_CIRCUMFERENCE * (1 - ratio);
       ring.style.strokeDashoffset = offset;
 
-      // Color Accent per Mode
       const modeLabel = document.getElementById('timer-mode-label');
       const statusDot = document.getElementById('timer-status-dot');
       if (runtime.mode === 'focus') {
@@ -832,7 +899,6 @@
         modeLabel.textContent = 'Long Break';
       }
 
-      // Live status indicator
       if (runtime.isRunning) {
         statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-live-dot';
         document.getElementById('icon-timer-play').classList.add('hidden');
@@ -845,7 +911,6 @@
         document.getElementById('label-timer-toggle').textContent = runtime.mode === 'focus' ? 'Start Focus' : 'Start Break';
       }
 
-      // Mode Tab Highlighting
       document.querySelectorAll('.mode-tab').forEach(btn => {
         const active = btn.dataset.mode === runtime.mode;
         btn.className = active
@@ -853,8 +918,7 @@
           : 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
       });
 
-      // Linked Task Banner
-      const activeTask = appState.tasks.find(t => t.id === appState.activeTaskId);
+      const activeTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
       const taskTitleEl = document.getElementById('active-task-title');
       const unlinkBtn = document.getElementById('btn-unlink-task');
       if (activeTask) {
@@ -867,18 +931,20 @@
     }
 
     // =========================================================================
-    // 4. TASK & TIME-BLOCK MANAGER
+    // PRIORITY TASK MANAGER (PERMANENT & SYNCED WITH WEEKLY FOCUS)
     // =========================================================================
 
     function addTask(title, priority, block, estSessions) {
       const newTask = {
-        id: 'task-' + Date.now(),
+        id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         title: title.trim(),
         priority,
         block,
         estSessions: Math.max(1, parseInt(estSessions, 10) || 1),
         completedSessions: 0,
         completed: false,
+        completedDate: null,
+        createdAt: getTodayKey(),
       };
       appState.tasks.unshift(newTask);
       if (!appState.activeTaskId) {
@@ -888,15 +954,104 @@
       renderTasks();
       renderKPIs();
       updateTimerUI();
+      showToast('Task saved permanently');
     }
 
     function toggleTaskComplete(id) {
       const task = appState.tasks.find(t => t.id === id);
       if (!task) return;
+
+      const today = getTodayKey();
+      const dayRecord = ensureDayRecord(today);
       task.completed = !task.completed;
+
+      if (task.completed) {
+        task.completedDate = today;
+        if (task.completedSessions < task.estSessions) {
+          task.completedSessions = task.estSessions;
+        }
+
+        // Check if this task already has a 'completed' entry today so we don't duplicate
+        const alreadyCompletedEntry = dayRecord.entries.find(
+          e => e.taskId === task.id && e.status === 'completed'
+        );
+
+        if (!alreadyCompletedEntry) {
+          // If no timer minutes were logged for this task today, credit 1 focus block
+          const existingTaskMinsToday = dayRecord.entries
+            .filter(e => e.taskId === task.id)
+            .reduce((sum, e) => sum + e.minutes, 0);
+
+          const creditMinutes = existingTaskMinsToday > 0 ? 0 : appState.settings.focusMin;
+          if (creditMinutes > 0) {
+            dayRecord.minutes += creditMinutes;
+            dayRecord.sessions += 1;
+          }
+
+          dayRecord.entries.unshift({
+            taskId: task.id,
+            title: task.title,
+            priority: task.priority,
+            block: task.block,
+            minutes: creditMinutes > 0 ? creditMinutes : existingTaskMinsToday,
+            status: 'completed',
+            timestamp: formatTimeNow(),
+          });
+        }
+
+        if (appState.activeTaskId === task.id) {
+          const nextActive = appState.tasks.find(t => !t.completed && t.id !== task.id);
+          appState.activeTaskId = nextActive ? nextActive.id : null;
+        }
+
+        showToast('Task completed & synced to Weekly Focus!');
+      } else {
+        // Unchecking task removes its completion credit if it was auto-credited without timer sessions
+        const prevDate = task.completedDate || today;
+        const targetDay = appState.dailyHistory[prevDate];
+        if (targetDay) {
+          const compIdx = targetDay.entries.findIndex(
+            e => e.taskId === task.id && e.status === 'completed'
+          );
+          if (compIdx !== -1) {
+            const removed = targetDay.entries[compIdx];
+            const hasOtherLogs = targetDay.entries.some(
+              (e, idx) => idx !== compIdx && e.taskId === task.id
+            );
+            if (!hasOtherLogs && removed.minutes > 0) {
+              targetDay.minutes = Math.max(0, targetDay.minutes - removed.minutes);
+              targetDay.sessions = Math.max(0, targetDay.sessions - 1);
+            }
+            targetDay.entries.splice(compIdx, 1);
+          }
+        }
+        task.completedDate = null;
+      }
+
       saveState();
       renderTasks();
       renderKPIs();
+      renderWeeklyChart();
+      updateTimerUI();
+    }
+
+    function editTaskTitle(id) {
+      const task = appState.tasks.find(t => t.id === id);
+      if (!task) return;
+      const updated = prompt('Edit task title:', task.title);
+      if (updated && updated.trim()) {
+        task.title = updated.trim();
+        // Also update title in daily history entries
+        Object.values(appState.dailyHistory).forEach(day => {
+          day.entries.forEach(entry => {
+            if (entry.taskId === id) entry.title = task.title;
+          });
+        });
+        saveState();
+        renderTasks();
+        updateTimerUI();
+        showToast('Task updated');
+      }
     }
 
     function deleteTask(id) {
@@ -909,9 +1064,12 @@
       renderTasks();
       renderKPIs();
       updateTimerUI();
+      showToast('Task deleted');
     }
 
     function selectActiveTask(id) {
+      const task = appState.tasks.find(t => t.id === id);
+      if (!task || task.completed) return;
       appState.activeTaskId = id;
       saveState();
       renderTasks();
@@ -932,7 +1090,6 @@
       const container = document.getElementById('task-list-container');
       container.innerHTML = '';
 
-      // Filter tabs styling
       document.querySelectorAll('.filter-btn').forEach(btn => {
         const isCurrent = btn.dataset.filter === appState.filter;
         btn.className = isCurrent
@@ -940,7 +1097,13 @@
           : 'filter-btn px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
       });
 
-      const filtered = appState.tasks.filter(t => {
+      const priorityWeight = { high: 1, medium: 2, low: 3 };
+      const sortedTasks = [...appState.tasks].sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return (priorityWeight[a.priority] || 9) - (priorityWeight[b.priority] || 9);
+      });
+
+      const filtered = sortedTasks.filter(t => {
         if (appState.filter === 'active') return !t.completed;
         if (appState.filter === 'completed') return t.completed;
         return true;
@@ -950,14 +1113,16 @@
         container.innerHTML = `
           <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above to structure your day.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — it saves permanently and updates Weekly Focus.</p>
           </div>
         `;
       } else {
         filtered.forEach(task => {
-          const isLinked = task.id === appState.activeTaskId;
+          const isLinked = task.id === appState.activeTaskId && !task.completed;
           const card = document.createElement('div');
-          card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
+          card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+            task.completed ? 'cursor-default opacity-80' : 'cursor-pointer'
+          } ${
             isLinked
               ? 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-400 dark:border-indigo-500/70'
               : 'bg-white dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
@@ -986,14 +1151,18 @@
                     ${escapeHTML(task.block)}
                   </span>
                   ${isLinked ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active Focus</span>' : ''}
+                  ${task.completed && task.completedDate ? `<span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">✓ Done (${task.completedDate})</span>` : ''}
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
               <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 font-mono text-xs font-semibold text-slate-600 dark:text-slate-300" title="Completed / Estimated Focus Sessions">
                 ${task.completedSessions}/${task.estSessions}
               </span>
+              <button type="button" data-action="edit" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition" title="Edit Task">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
               <button type="button" data-action="delete" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition" title="Delete Task">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               </button>
@@ -1006,6 +1175,7 @@
               e.stopPropagation();
               const act = actionBtn.dataset.action;
               if (act === 'toggle') toggleTaskComplete(task.id);
+              if (act === 'edit') editTaskTitle(task.id);
               if (act === 'delete') deleteTask(task.id);
               return;
             }
@@ -1016,7 +1186,6 @@
         });
       }
 
-      // Update footer workload estimate
       const remainingSessions = appState.tasks
         .filter(t => !t.completed)
         .reduce((acc, t) => acc + Math.max(0, t.estSessions - t.completedSessions), 0);
@@ -1032,18 +1201,19 @@
     }
 
     // =========================================================================
-    // 5. KPI CARDS & 7-DAY ANALYTICS RENDERING
+    // KPI CARDS, INTERACTIVE WEEKLY CHART & DAILY TASK BREAKDOWN MODAL
     // =========================================================================
 
     function renderKPIs() {
-      const todayMin = appState.weeklyLog[getTodayKey()] || 0;
+      const todayData = appState.dailyHistory[getTodayKey()] || { minutes: 0, sessions: 0 };
+      const todayMin = todayData.minutes;
       const goalMin = appState.settings.dailyGoalMin;
       const pct = Math.min(100, Math.round((todayMin / goalMin) * 100));
 
       document.getElementById('kpi-focus-time').textContent =
         todayMin >= 60 ? `${(todayMin / 60).toFixed(1)}h` : `${todayMin}m`;
       document.getElementById('kpi-sessions-count').textContent =
-        `${appState.sessionsToday} session${appState.sessionsToday === 1 ? '' : 's'} logged today`;
+        `${todayData.sessions} session${todayData.sessions === 1 ? '' : 's'} logged today`;
 
       document.getElementById('kpi-goal-percent').textContent = `${pct}%`;
       document.getElementById('kpi-goal-fraction').textContent = `${todayMin} / ${goalMin}m`;
@@ -1054,7 +1224,84 @@
       document.getElementById('kpi-tasks-done').textContent = `${doneTasks} / ${totalTasks}`;
       document.getElementById('kpi-tasks-pending').textContent = `${totalTasks - doneTasks} remaining in queue`;
 
-      document.getElementById('kpi-streak-days').textContent = `${appState.streakDays} Days`;
+      const streak = calculateStreak();
+      document.getElementById('kpi-streak-days').textContent = `${streak} Day${streak === 1 ? '' : 's'}`;
+    }
+
+    function openDayDetailModal(dateKey) {
+      runtime.selectedDetailDate = dateKey;
+      const dayRecord = appState.dailyHistory[dateKey] || { minutes: 0, sessions: 0, entries: [] };
+
+      const [y, m, d] = dateKey.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      const formattedDate = dateObj.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+
+      document.getElementById('day-detail-title').textContent = formattedDate;
+      document.getElementById('day-detail-subtitle').textContent =
+        `${dayRecord.minutes}m logged • ${dayRecord.sessions} session${dayRecord.sessions === 1 ? '' : 's'} • ${dayRecord.entries.length} activity item${dayRecord.entries.length === 1 ? '' : 's'}`;
+
+      const listEl = document.getElementById('day-detail-list');
+      listEl.innerHTML = '';
+
+      if (!dayRecord.entries || dayRecord.entries.length === 0) {
+        listEl.innerHTML = `
+          <div class="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks completed or logged on this day</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Complete a priority task or finish a focus session to record it here.</p>
+          </div>
+        `;
+      } else {
+        dayRecord.entries.forEach(entry => {
+          const isCompletedStatus = entry.status === 'completed';
+          const row = document.createElement('div');
+          row.className = 'p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-3';
+          row.innerHTML = `
+            <div class="flex items-start gap-2.5 min-w-0">
+              <span class="mt-0.5 w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${
+                isCompletedStatus
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
+              }">
+                ${
+                  isCompletedStatus
+                    ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+                    : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 15"></polyline></svg>'
+                }
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(entry.title)}</p>
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                  ${getPriorityBadgeHTML(entry.priority)}
+                  <span class="text-[11px] font-medium ${
+                    isCompletedStatus ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'
+                  }">
+                    ${isCompletedStatus ? 'Task Completed' : 'Focus Session'}
+                  </span>
+                  <span class="text-[11px] text-slate-400">• ${escapeHTML(entry.timestamp || '')}</span>
+                </div>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-xs font-bold text-slate-700 dark:text-slate-200 shrink-0">
+              +${entry.minutes}m
+            </span>
+          `;
+          listEl.appendChild(row);
+        });
+      }
+
+      document.getElementById('modal-day-detail').classList.remove('hidden');
+      renderWeeklyChart();
+    }
+
+    function closeDayDetailModal() {
+      runtime.selectedDetailDate = null;
+      document.getElementById('modal-day-detail').classList.add('hidden');
+      renderWeeklyChart();
     }
 
     function renderWeeklyChart() {
@@ -1070,12 +1317,15 @@
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = getTodayKey(-i);
-        const mins = appState.weeklyLog[key] || 0;
+        const record = appState.dailyHistory[key] || { minutes: 0, entries: [] };
+        const mins = record.minutes || 0;
         totalWeekMinutes += mins;
         if (mins > maxVal) maxVal = mins;
         days.push({
+          key,
           label: dayNames[d.getDay()],
           mins,
+          entryCount: (record.entries || []).length,
           isToday: i === 0,
         });
       }
@@ -1083,35 +1333,47 @@
       document.getElementById('weekly-total-badge').textContent = `${totalWeekMinutes}m total`;
 
       days.forEach(item => {
-        const heightPct = Math.max(6, Math.round((item.mins / maxVal) * 100));
-        const col = document.createElement('div');
-        col.className = 'flex-1 h-full flex flex-col items-center justify-end gap-1.5 group';
+        const heightPct = item.mins > 0 ? Math.max(10, Math.round((item.mins / maxVal) * 100)) : 5;
+        const isSelected = runtime.selectedDetailDate === item.key;
+
+        const col = document.createElement('button');
+        col.type = 'button';
+        col.title = `Click to see tasks on ${item.key} (${item.mins}m)`;
+        col.className = 'flex-1 h-full flex flex-col items-center justify-end gap-1.5 group focus:outline-none cursor-pointer';
         col.innerHTML = `
-          <span class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 opacity-80 group-hover:opacity-100">
+          <span class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
             ${item.mins}m
           </span>
-          <div class="w-full max-w-[34px] flex-1 flex items-end bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-hidden p-0.5">
+          <div class="w-full max-w-[36px] flex-1 flex items-end bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-hidden p-0.5 ring-2 transition ${
+            isSelected
+              ? 'ring-indigo-500'
+              : 'ring-transparent group-hover:ring-indigo-300 dark:group-hover:ring-indigo-700'
+          }">
             <div
               class="w-full rounded-lg transition-all duration-500 ${
-                item.isToday
+                item.mins === 0
+                  ? 'bg-slate-200 dark:bg-slate-700/60'
+                  : item.isToday
                   ? 'bg-indigo-600 dark:bg-indigo-500'
-                  : 'bg-indigo-300 dark:bg-indigo-800/90 group-hover:bg-indigo-400'
+                  : 'bg-indigo-400 dark:bg-indigo-700 group-hover:bg-indigo-500'
               }"
               style="height: ${heightPct}%"
             ></div>
           </div>
           <span class="text-[11px] font-semibold ${
-            item.isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
+            item.isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
           }">
             ${item.label}
           </span>
         `;
+
+        col.addEventListener('click', () => openDayDetailModal(item.key));
         container.appendChild(col);
       });
     }
 
     // =========================================================================
-    // 6. THEME, SOUNDSCAPE UI & EVENT LISTENERS
+    // THEME, SOUNDSCAPE UI & EVENT LISTENERS
     // =========================================================================
 
     function applyTheme(theme) {
@@ -1198,7 +1460,6 @@
       });
     });
 
-    // Task Form & Filters
     document.getElementById('form-add-task').addEventListener('submit', (e) => {
       e.preventDefault();
       const input = document.getElementById('input-task-title');
@@ -1220,30 +1481,42 @@
       });
     });
 
+    // Clear completed tasks from the active queue (keeps Weekly Focus history intact!)
     document.getElementById('btn-clear-completed').addEventListener('click', () => {
       appState.tasks = appState.tasks.filter(t => !t.completed);
       saveState();
       renderTasks();
       renderKPIs();
-      showToast('Cleared completed tasks');
+      showToast('Cleared completed list (Weekly Focus history kept)');
     });
 
-    document.getElementById('btn-reset-demo').addEventListener('click', () => {
+    document.getElementById('btn-reset-all').addEventListener('click', () => {
+      if (!confirm('Reset all saved tasks and weekly focus history?')) return;
       const currentTheme = appState.theme;
-      appState = createDefaultState();
+      appState = createEmptyState();
       appState.theme = currentTheme;
       saveState();
       switchTimerMode('focus');
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
-      showToast('Sample portfolio data restored');
+      showToast('All data cleared');
     });
 
-    // Settings Modal
+    // Settings & Day Detail Modals
     document.getElementById('btn-open-settings').addEventListener('click', openSettingsModal);
     document.getElementById('btn-edit-goal').addEventListener('click', openSettingsModal);
     document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
+    document.getElementById('btn-close-day-detail').addEventListener('click', closeDayDetailModal);
+    document.getElementById('btn-done-day-detail').addEventListener('click', closeDayDetailModal);
+
+    // Close modals when clicking backdrop
+    document.getElementById('modal-settings').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-settings') closeSettingsModal();
+    });
+    document.getElementById('modal-day-detail').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-day-detail') closeDayDetailModal();
+    });
 
     document.querySelectorAll('.preset-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -1264,12 +1537,18 @@
       closeSettingsModal();
       resetTimer();
       renderKPIs();
+      renderWeeklyChart();
       renderTasks();
       showToast('Timer & goal settings updated');
     });
 
-    // Keyboard Shortcut: Spacebar toggles timer when not typing in an input
+    // Keyboard Shortcuts
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSettingsModal();
+        closeDayDetailModal();
+        return;
+      }
       const tag = document.activeElement.tagName.toLowerCase();
       if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
       if (e.code === 'Space') {
@@ -1280,7 +1559,6 @@
 
     // Initial Boot
     window.addEventListener('DOMContentLoaded', () => {
-      // Display formatted current date
       const dateStr = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'short',
