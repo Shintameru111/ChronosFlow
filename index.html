@@ -101,7 +101,7 @@
       <!-- Right Action Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2">
         <!-- Timer Settings Trigger -->
-        <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals & Daily Goal">
+        <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals, Daily Goal & Country Timezone">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -338,11 +338,11 @@
       <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCKING MANAGER -->
       <section class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
 
-        <!-- Header & Filters -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <!-- Header, Country Timezone Selector & Filters -->
+        <div class="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with timer • Remaining sessions decrease per completed timer</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Completion records date + exact time in your selected country</p>
           </div>
 
           <!-- Status Filter Tabs -->
@@ -353,8 +353,22 @@
           </div>
         </div>
 
+        <!-- Country / Timezone Bar -->
+        <div class="mt-3.5 px-3 py-2 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/25 border border-indigo-200/60 dark:border-indigo-800/50 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <label class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="font-semibold text-indigo-700 dark:text-indigo-300 shrink-0 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              Country / Zone:
+            </span>
+            <select id="select-user-timezone" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-full truncate">
+              <!-- Populated dynamically via JS -->
+            </select>
+          </label>
+          <span id="live-country-clock" class="font-mono text-[11px] font-semibold text-slate-600 dark:text-slate-300 shrink-0"></span>
+        </div>
+
         <!-- Add New Task Form -->
-        <form id="form-add-task" class="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+        <form id="form-add-task" class="mt-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
           <div class="flex flex-col sm:flex-row gap-2">
             <input
               id="input-task-title"
@@ -502,22 +516,108 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v3';
+    const STORAGE_KEY = 'chronosflow_persistent_v4';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
-    function getTodayKey(offsetDays = 0) {
-      const d = new Date();
-      d.setDate(d.getDate() + offsetDays);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+    // Country & Timezone options tailored to user's residence
+    const COUNTRY_TIMEZONES = [
+      { id: 'Asia/Jakarta', label: 'Indonesia — WIB (Jakarta / Semarang)', country: 'Indonesia' },
+      { id: 'Asia/Makassar', label: 'Indonesia — WITA (Bali / Makassar)', country: 'Indonesia' },
+      { id: 'Asia/Jayapura', label: 'Indonesia — WIT (Papua / Jayapura)', country: 'Indonesia' },
+      { id: 'Asia/Singapore', label: 'Singapore — SGT', country: 'Singapore' },
+      { id: 'Asia/Kuala_Lumpur', label: 'Malaysia — MYT (Kuala Lumpur)', country: 'Malaysia' },
+      { id: 'Asia/Tokyo', label: 'Japan — JST (Tokyo)', country: 'Japan' },
+      { id: 'Asia/Seoul', label: 'South Korea — KST (Seoul)', country: 'South Korea' },
+      { id: 'Asia/Dubai', label: 'United Arab Emirates — GST (Dubai)', country: 'UAE' },
+      { id: 'Europe/Vienna', label: 'Austria — CET (Vienna / Salzburg)', country: 'Austria' },
+      { id: 'Europe/Berlin', label: 'Germany — CET (Berlin)', country: 'Germany' },
+      { id: 'Europe/London', label: 'United Kingdom — GMT/BST (London)', country: 'United Kingdom' },
+      { id: 'America/New_York', label: 'United States — EST (New York)', country: 'United States' },
+      { id: 'America/Los_Angeles', label: 'United States — PST (Los Angeles)', country: 'United States' },
+    ];
+
+    function detectDeviceTimezone() {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return tz || 'Asia/Jakarta';
+      } catch (e) {
+        return 'Asia/Jakarta';
+      }
+    }
+
+    function getActiveTimezone() {
+      return appState.timezone || detectDeviceTimezone();
+    }
+
+    function getTimezoneMeta(tz) {
+      const found = COUNTRY_TIMEZONES.find(item => item.id === tz);
+      if (found) return found;
+      const parts = tz.split('/');
+      const city = (parts[parts.length - 1] || tz).replace(/_/g, ' ');
+      return { id: tz, label: `${city} (${tz})`, country: city };
+    }
+
+    // Get YYYY-MM-DD in the user's selected country timezone
+    function getDateKeyInTimezone(offsetDays = 0, tz = getActiveTimezone()) {
+      const baseDate = new Date(Date.now() + offsetDays * 86400000);
+      try {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone: tz,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).formatToParts(baseDate);
+        const y = parts.find(p => p.type === 'year')?.value;
+        const m = parts.find(p => p.type === 'month')?.value;
+        const d = parts.find(p => p.type === 'day')?.value;
+        if (y && m && d) return `${y}-${m}-${d}`;
+      } catch (e) {}
+      const year = baseDate.getFullYear();
+      const month = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const day = String(baseDate.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // Format full date + exact time + timezone/country for completion timestamps
+    function formatCompletionTimestamp(isoString = new Date().toISOString(), tz = getActiveTimezone()) {
+      const dateObj = new Date(isoString);
+      const meta = getTimezoneMeta(tz);
+      try {
+        const formatted = new Intl.DateTimeFormat('en-GB', {
+          timeZone: tz,
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZoneName: 'short',
+        }).format(dateObj);
+        return `${formatted} • ${meta.country}`;
+      } catch (e) {
+        return `${dateObj.toLocaleString()} • ${meta.country}`;
+      }
+    }
+
+    function formatTimeOnlyInTimezone(dateObj = new Date(), tz = getActiveTimezone()) {
+      try {
+        return new Intl.DateTimeFormat('en-GB', {
+          timeZone: tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZoneName: 'short',
+        }).format(dateObj);
+      } catch (e) {
+        return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
     }
 
     function createEmptyState() {
       return {
         theme: 'light',
         muted: false,
+        timezone: detectDeviceTimezone(),
         settings: {
           focusMin: 25,
           shortMin: 5,
@@ -540,6 +640,7 @@
         return {
           ...base,
           ...parsed,
+          timezone: parsed.timezone || base.timezone,
           settings: { ...base.settings, ...(parsed.settings || {}) },
           dailyHistory: parsed.dailyHistory || {},
           tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
@@ -576,12 +677,12 @@
 
     function calculateStreak() {
       let streak = 0;
-      const todayKey = getTodayKey(0);
+      const todayKey = getDateKeyInTimezone(0);
       const todayHasActivity = (appState.dailyHistory[todayKey]?.minutes || 0) > 0;
       let offset = todayHasActivity ? 0 : -1;
 
       while (true) {
-        const key = getTodayKey(offset);
+        const key = getDateKeyInTimezone(offset);
         const dayData = appState.dailyHistory[key];
         if (dayData && dayData.minutes > 0) {
           streak++;
@@ -603,6 +704,40 @@
       ambientMode: 'off',
       selectedDetailDate: null,
     };
+
+    // =========================================================================
+    // TIMEZONE SELECTOR & LIVE COUNTRY CLOCK
+    // =========================================================================
+
+    function initTimezoneSelector() {
+      const selectEl = document.getElementById('select-user-timezone');
+      const currentTz = getActiveTimezone();
+      selectEl.innerHTML = '';
+
+      const hasCurrentInList = COUNTRY_TIMEZONES.some(item => item.id === currentTz);
+      if (!hasCurrentInList) {
+        const autoOpt = document.createElement('option');
+        autoOpt.value = currentTz;
+        autoOpt.textContent = `Detected (${currentTz})`;
+        selectEl.appendChild(autoOpt);
+      }
+
+      COUNTRY_TIMEZONES.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.label;
+        selectEl.appendChild(opt);
+      });
+
+      selectEl.value = currentTz;
+      updateLiveCountryClock();
+    }
+
+    function updateLiveCountryClock() {
+      const tz = getActiveTimezone();
+      const clockEl = document.getElementById('live-country-clock');
+      clockEl.textContent = formatTimeOnlyInTimezone(new Date(), tz);
+    }
 
     // =========================================================================
     // WEB AUDIO API ENGINE
@@ -722,7 +857,7 @@
     })();
 
     // =========================================================================
-    // TIMER CONTROLLER (DECREASES SESSIONS & AUTO-CHECKS COMPLETED TASK)
+    // TIMER CONTROLLER
     // =========================================================================
 
     function formatClock(totalSecs) {
@@ -790,23 +925,21 @@
       updateTimerUI();
     }
 
-    function formatTimeNow() {
-      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
     function completeCurrentSession() {
       pauseTimer();
       AudioEngine.playCompletionChime();
 
       if (runtime.mode === 'focus') {
         const loggedMin = appState.settings.focusMin;
-        const today = getTodayKey();
+        const nowIso = new Date().toISOString();
+        const tz = getActiveTimezone();
+        const today = getDateKeyInTimezone(0, tz);
+        const completedStamp = formatCompletionTimestamp(nowIso, tz);
         const dayRecord = ensureDayRecord(today);
 
         dayRecord.minutes += loggedMin;
         dayRecord.sessions += 1;
 
-        // Find linked task (even if previously marked completed, re-open if user runs it again)
         let linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId);
         if (!linkedTask) {
           linkedTask = appState.tasks.find(t => !t.completed) || null;
@@ -821,9 +954,13 @@
           if (isNowFinished) {
             linkedTask.completed = true;
             linkedTask.completedDate = today;
+            linkedTask.completedAtIso = nowIso;
+            linkedTask.completedAtLabel = completedStamp;
           } else {
             linkedTask.completed = false;
             linkedTask.completedDate = null;
+            linkedTask.completedAtIso = null;
+            linkedTask.completedAtLabel = null;
           }
 
           dayRecord.entries.unshift({
@@ -833,15 +970,15 @@
             block: linkedTask.block,
             minutes: loggedMin,
             status: isNowFinished ? 'completed' : 'session_logged',
-            timestamp: formatTimeNow(),
+            timestamp: completedStamp,
           });
 
           if (isNowFinished) {
             const nextTask = appState.tasks.find(t => !t.completed && t.id !== linkedTask.id);
             appState.activeTaskId = nextTask ? nextTask.id : null;
-            showToast(`"${linkedTask.title}" selesai & otomatis tercentang! (+${loggedMin}m)`);
+            showToast(`Selesai (${completedStamp}) & otomatis tercentang!`);
           } else {
-            showToast(`1 sesi selesai! Sisa ${leftAfterSession} sesi lagi untuk "${linkedTask.title}".`);
+            showToast(`1 sesi selesai! Sisa ${leftAfterSession} sesi lagi.`);
           }
         } else {
           dayRecord.entries.unshift({
@@ -851,9 +988,9 @@
             block: 'Anytime',
             minutes: loggedMin,
             status: 'session_logged',
-            timestamp: formatTimeNow(),
+            timestamp: completedStamp,
           });
-          showToast(`Focus session complete! +${loggedMin}m logged.`);
+          showToast(`Focus session complete! +${loggedMin}m (${completedStamp})`);
         }
 
         saveState();
@@ -929,11 +1066,12 @@
     }
 
     // =========================================================================
-    // PRIORITY TASK MANAGER
+    // PRIORITY TASK MANAGER (WITH COUNTRY DATE & TIME STAMP)
     // =========================================================================
 
     function addTask(title, priority, block, estSessions) {
       const parsedEst = Math.max(1, parseInt(estSessions, 10) || 1);
+      const tz = getActiveTimezone();
       const newTask = {
         id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         title: title.trim(),
@@ -943,7 +1081,9 @@
         completedSessions: 0,
         completed: false,
         completedDate: null,
-        createdAt: getTodayKey(),
+        completedAtIso: null,
+        completedAtLabel: null,
+        createdAt: getDateKeyInTimezone(0, tz),
       };
       appState.tasks.unshift(newTask);
       if (!appState.activeTaskId) {
@@ -960,12 +1100,18 @@
       const task = appState.tasks.find(t => t.id === id);
       if (!task) return;
 
-      const today = getTodayKey();
+      const nowIso = new Date().toISOString();
+      const tz = getActiveTimezone();
+      const today = getDateKeyInTimezone(0, tz);
+      const completedStamp = formatCompletionTimestamp(nowIso, tz);
       const dayRecord = ensureDayRecord(today);
+
       task.completed = !task.completed;
 
       if (task.completed) {
         task.completedDate = today;
+        task.completedAtIso = nowIso;
+        task.completedAtLabel = completedStamp;
         task.completedSessions = task.estSessions;
 
         const alreadyCompletedEntry = dayRecord.entries.find(
@@ -990,7 +1136,7 @@
             block: task.block,
             minutes: creditMinutes > 0 ? creditMinutes : existingTaskMinsToday,
             status: 'completed',
-            timestamp: formatTimeNow(),
+            timestamp: completedStamp,
           });
         }
 
@@ -999,9 +1145,8 @@
           appState.activeTaskId = nextActive ? nextActive.id : null;
         }
 
-        showToast('Task completed & synced to Weekly Focus!');
+        showToast(`Selesai (${completedStamp}) & masuk Weekly Focus!`);
       } else {
-        // Restore 1 remaining session when manually unchecked
         task.completedSessions = Math.max(0, task.estSessions - 1);
         const prevDate = task.completedDate || today;
         const targetDay = appState.dailyHistory[prevDate];
@@ -1022,6 +1167,8 @@
           }
         }
         task.completedDate = null;
+        task.completedAtIso = null;
+        task.completedAtLabel = null;
         appState.activeTaskId = task.id;
       }
 
@@ -1087,6 +1234,8 @@
       const container = document.getElementById('task-list-container');
       container.innerHTML = '';
 
+      const activeTz = getActiveTimezone();
+
       document.querySelectorAll('.filter-btn').forEach(btn => {
         const isCurrent = btn.dataset.filter === appState.filter;
         btn.className = isCurrent
@@ -1110,7 +1259,7 @@
         container.innerHTML = `
           <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — sisa sesi akan berkurang tiap timer selesai.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — waktu selesai akan tercatat lengkap dengan tanggal &amp; jam negara pilihanmu.</p>
           </div>
         `;
       } else {
@@ -1121,9 +1270,15 @@
             ? `Done (${task.completedSessions}/${task.estSessions})`
             : `${sessionsLeft} left (${task.completedSessions}/${task.estSessions})`;
 
+          const doneStampText = task.completed
+            ? (task.completedAtIso
+                ? formatCompletionTimestamp(task.completedAtIso, activeTz)
+                : (task.completedAtLabel || task.completedDate || ''))
+            : '';
+
           const card = document.createElement('div');
           card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
-            task.completed ? 'cursor-default opacity-80' : 'cursor-pointer'
+            task.completed ? 'cursor-default opacity-85' : 'cursor-pointer'
           } ${
             isLinked
               ? 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-400 dark:border-indigo-500/70'
@@ -1153,7 +1308,11 @@
                     ${escapeHTML(task.block)}
                   </span>
                   ${isLinked ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active in Timer</span>' : ''}
-                  ${task.completed && task.completedDate ? `<span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">✓ Checked (${task.completedDate})</span>` : ''}
+                  ${
+                    task.completed && doneStampText
+                      ? `<span class="text-[10px] font-mono font-semibold text-emerald-600 dark:text-emerald-400">✓ ${escapeHTML(doneStampText)}</span>`
+                      : ''
+                  }
                 </div>
               </div>
             </div>
@@ -1211,7 +1370,8 @@
     // =========================================================================
 
     function renderKPIs() {
-      const todayData = appState.dailyHistory[getTodayKey()] || { minutes: 0, sessions: 0 };
+      const tz = getActiveTimezone();
+      const todayData = appState.dailyHistory[getDateKeyInTimezone(0, tz)] || { minutes: 0, sessions: 0 };
       const todayMin = todayData.minutes;
       const goalMin = appState.settings.dailyGoalMin;
       const pct = Math.min(100, Math.round((todayMin / goalMin) * 100));
@@ -1239,8 +1399,9 @@
       const dayRecord = appState.dailyHistory[dateKey] || { minutes: 0, sessions: 0, entries: [] };
 
       const [y, m, d] = dateKey.split('-').map(Number);
-      const dateObj = new Date(y, m - 1, d);
+      const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
       const formattedDate = dateObj.toLocaleDateString('en-US', {
+        timeZone: 'UTC',
         weekday: 'long',
         month: 'short',
         day: 'numeric',
@@ -1288,7 +1449,7 @@
                   }">
                     ${isCompletedStatus ? 'Task Completed' : 'Focus Session'}
                   </span>
-                  <span class="text-[11px] text-slate-400">• ${escapeHTML(entry.timestamp || '')}</span>
+                  <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">• ${escapeHTML(entry.timestamp || '')}</span>
                 </div>
               </div>
             </div>
@@ -1314,22 +1475,23 @@
       const container = document.getElementById('weekly-chart-container');
       container.innerHTML = '';
 
+      const tz = getActiveTimezone();
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const days = [];
       let totalWeekMinutes = 0;
       let maxVal = Math.max(60, appState.settings.dailyGoalMin);
 
       for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const key = getTodayKey(-i);
+        const key = getDateKeyInTimezone(-i, tz);
+        const [y, m, d] = key.split('-').map(Number);
+        const utcDayObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
         const record = appState.dailyHistory[key] || { minutes: 0, entries: [] };
         const mins = record.minutes || 0;
         totalWeekMinutes += mins;
         if (mins > maxVal) maxVal = mins;
         days.push({
           key,
-          label: dayNames[d.getDay()],
+          label: dayNames[utcDayObj.getUTCDay()],
           mins,
           entryCount: (record.entries || []).length,
           isToday: i === 0,
@@ -1416,7 +1578,7 @@
       document.getElementById('toast-message').textContent = msg;
       banner.classList.remove('opacity-0');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => banner.classList.add('opacity-0'), 2600);
+      toastTimer = setTimeout(() => banner.classList.add('opacity-0'), 2800);
     }
 
     function openSettingsModal() {
@@ -1430,6 +1592,17 @@
     function closeSettingsModal() {
       document.getElementById('modal-settings').classList.add('hidden');
     }
+
+    document.getElementById('select-user-timezone').addEventListener('change', (e) => {
+      appState.timezone = e.target.value;
+      saveState();
+      updateLiveCountryClock();
+      renderKPIs();
+      renderWeeklyChart();
+      renderTasks();
+      const meta = getTimezoneMeta(appState.timezone);
+      showToast(`Zona waktu diset ke ${meta.label}`);
+    });
 
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
       applyTheme(appState.theme === 'dark' ? 'light' : 'dark');
@@ -1497,8 +1670,10 @@
     document.getElementById('btn-reset-all').addEventListener('click', () => {
       if (!confirm('Reset all saved tasks and weekly focus history?')) return;
       const currentTheme = appState.theme;
+      const currentTz = appState.timezone;
       appState = createEmptyState();
       appState.theme = currentTheme;
+      appState.timezone = currentTz;
       saveState();
       switchTimerMode('focus');
       renderKPIs();
@@ -1565,6 +1740,9 @@
         day: 'numeric',
       });
       document.getElementById('header-date-display').textContent = dateStr;
+
+      initTimezoneSelector();
+      setInterval(updateLiveCountryClock, 15000);
 
       applyTheme(appState.theme);
       updateMuteIcon();
