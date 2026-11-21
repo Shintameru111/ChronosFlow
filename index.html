@@ -338,56 +338,32 @@
       <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCKING MANAGER -->
       <section class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
 
-        <!-- Header & Filters -->
-        <div class="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <!-- Header, Simple Timezone Dropdown & Filters -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Supports all 400+ global IANA timezones across every country worldwide</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with timer</p>
           </div>
 
-          <!-- Status Filter Tabs -->
-          <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
-            <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg transition">All</button>
-            <button data-filter="active" class="filter-btn px-2.5 py-1 rounded-lg transition">Active</button>
-            <button data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg transition">Done</button>
-          </div>
-        </div>
-
-        <!-- Global Worldwide Country / Timezone Selector with Instant Search -->
-        <div class="mt-3.5 p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/25 border border-indigo-200/60 dark:border-indigo-800/50 space-y-2 text-xs">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-              Worldwide Timezone (<span id="tz-total-count">All</span> zones)
-            </span>
-            <div class="flex items-center gap-2">
-              <button type="button" id="btn-auto-detect-tz" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
-                Auto-Detect
-              </button>
-              <span class="text-slate-300 dark:text-slate-700">|</span>
-              <span id="live-country-clock" class="font-mono text-[11px] font-bold text-slate-700 dark:text-slate-200"></span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-            <input
-              id="input-search-timezone"
-              type="text"
-              placeholder="Search country, city, or UTC (e.g. Indonesia, Japan, Brazil, UTC+2)..."
-              class="sm:col-span-5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+          <div class="flex items-center gap-2">
             <select
               id="select-user-timezone"
-              aria-label="Select Worldwide Timezone"
-              class="sm:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 truncate"
+              aria-label="Timezone"
+              class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-[180px] sm:max-w-[220px] truncate"
             >
-              <!-- Populated dynamically with all global IANA timezones -->
+              <!-- All global IANA timezones -->
             </select>
+
+            <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
+              <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg transition">All</button>
+              <button data-filter="active" class="filter-btn px-2.5 py-1 rounded-lg transition">Active</button>
+              <button data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg transition">Done</button>
+            </div>
           </div>
         </div>
 
         <!-- Add New Task Form -->
-        <form id="form-add-task" class="mt-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+        <form id="form-add-task" class="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
           <div class="flex flex-col sm:flex-row gap-2">
             <input
               id="input-task-title"
@@ -535,20 +511,19 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v5';
+    const STORAGE_KEY = 'chronosflow_persistent_v6';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
-    // Build complete worldwide IANA timezone catalog (400+ zones across all continents & countries)
     const ALL_WORLD_TIMEZONES = (() => {
-      let rawZones = [];
+      let zones = [];
       try {
         if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
-          rawZones = Intl.supportedValuesOf('timeZone');
+          zones = Intl.supportedValuesOf('timeZone');
         }
       } catch (e) {}
 
-      if (!rawZones || rawZones.length === 0) {
-        rawZones = [
+      if (!zones || zones.length === 0) {
+        zones = [
           'UTC', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Lagos', 'Africa/Nairobi',
           'America/Anchorage', 'America/Argentina/Buenos_Aires', 'America/Bogota', 'America/Chicago',
           'America/Denver', 'America/Los_Angeles', 'America/Mexico_City', 'America/New_York',
@@ -566,67 +541,12 @@
           'Pacific/Honolulu'
         ];
       }
-
-      const now = new Date();
-      let regionNames = null;
-      try {
-        regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-      } catch (e) {}
-
-      return rawZones.map(tz => {
-        let offsetStr = '';
-        let shortZone = '';
-        try {
-          const offsetParts = new Intl.DateTimeFormat('en-US', {
-            timeZone: tz,
-            timeZoneName: 'shortOffset',
-          }).formatToParts(now);
-          offsetStr = offsetParts.find(p => p.type === 'timeZoneName')?.value || '';
-        } catch (e) {}
-
-        try {
-          const shortParts = new Intl.DateTimeFormat('en-US', {
-            timeZone: tz,
-            timeZoneName: 'short',
-          }).formatToParts(now);
-          shortZone = shortParts.find(p => p.type === 'timeZoneName')?.value || '';
-        } catch (e) {}
-
-        // Try resolving country/region if browser supports Intl.Locale().getTimeZones() or fallback to region/city
-        let countryLabel = '';
-        try {
-          const loc = new Intl.Locale('en-US');
-          if (typeof loc.getTimeZones === 'function') {
-            // Leave fast lookup via zone parts
-          }
-        } catch (e) {}
-
-        const segments = tz.split('/');
-        const region = segments[0] ? segments[0].replace(/_/g, ' ') : '';
-        const place = segments.slice(1).join(' / ').replace(/_/g, ' ') || tz;
-        const badge = offsetStr || shortZone || 'UTC';
-        const displayLabel = segments.length > 1
-          ? `[${badge}] ${region} — ${place}`
-          : `[${badge}] ${place}`;
-
-        return {
-          id: tz,
-          region,
-          place,
-          badge,
-          shortZone: shortZone || badge,
-          label: displayLabel,
-          searchBlob: `${tz} ${region} ${place} ${badge} ${shortZone} ${countryLabel}`.toLowerCase(),
-        };
-      });
+      return zones;
     })();
-
-    const TIMEZONE_MAP = new Map(ALL_WORLD_TIMEZONES.map(item => [item.id, item]));
 
     function detectDeviceTimezone() {
       try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        return tz || 'Asia/Jakarta';
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
       } catch (e) {
         return 'Asia/Jakarta';
       }
@@ -636,23 +556,14 @@
       return appState.timezone || detectDeviceTimezone();
     }
 
-    function getTimezoneMeta(tz) {
-      if (TIMEZONE_MAP.has(tz)) return TIMEZONE_MAP.get(tz);
-      const segments = tz.split('/');
-      const region = segments[0] || 'Global';
-      const place = segments.slice(1).join(' / ').replace(/_/g, ' ') || tz;
-      return {
-        id: tz,
-        region,
-        place,
-        badge: tz,
-        shortZone: tz,
-        label: `${region} — ${place}`,
-        searchBlob: tz.toLowerCase(),
-      };
+    function formatTimezoneLabel(tz) {
+      const parts = tz.split('/');
+      if (parts.length > 1) {
+        return `${parts[0].replace(/_/g, ' ')} / ${parts.slice(1).join('/').replace(/_/g, ' ')}`;
+      }
+      return tz;
     }
 
-    // Get YYYY-MM-DD in the user's selected worldwide timezone
     function getDateKeyInTimezone(offsetDays = 0, tz = getActiveTimezone()) {
       const baseDate = new Date(Date.now() + offsetDays * 86400000);
       try {
@@ -673,12 +584,10 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Format full date + exact time + timezone + location for completion timestamps
     function formatCompletionTimestamp(isoString = new Date().toISOString(), tz = getActiveTimezone()) {
       const dateObj = new Date(isoString);
-      const meta = getTimezoneMeta(tz);
       try {
-        const formatted = new Intl.DateTimeFormat('en-GB', {
+        return new Intl.DateTimeFormat('en-GB', {
           timeZone: tz,
           day: '2-digit',
           month: 'short',
@@ -688,23 +597,8 @@
           hour12: false,
           timeZoneName: 'short',
         }).format(dateObj);
-        return `${formatted} (${meta.place})`;
       } catch (e) {
-        return `${dateObj.toLocaleString()} (${meta.place})`;
-      }
-    }
-
-    function formatTimeOnlyInTimezone(dateObj = new Date(), tz = getActiveTimezone()) {
-      try {
-        return new Intl.DateTimeFormat('en-GB', {
-          timeZone: tz,
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZoneName: 'short',
-        }).format(dateObj);
-      } catch (e) {
-        return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return dateObj.toLocaleString();
       }
     }
 
@@ -800,77 +694,38 @@
       selectedDetailDate: null,
     };
 
-    // =========================================================================
-    // WORLDWIDE TIMEZONE SELECTOR & SEARCH
-    // =========================================================================
-
-    function renderTimezoneOptions(searchQuery = '') {
+    function initTimezoneDropdown() {
       const selectEl = document.getElementById('select-user-timezone');
       const currentTz = getActiveTimezone();
-      const q = searchQuery.trim().toLowerCase();
-
-      const filtered = q
-        ? ALL_WORLD_TIMEZONES.filter(item => item.searchBlob.includes(q))
-        : ALL_WORLD_TIMEZONES;
-
-      document.getElementById('tz-total-count').textContent = filtered.length;
       selectEl.innerHTML = '';
 
-      if (filtered.length === 0) {
-        const emptyOpt = document.createElement('option');
-        emptyOpt.value = currentTz;
-        emptyOpt.textContent = `No match — keeping ${getTimezoneMeta(currentTz).label}`;
-        selectEl.appendChild(emptyOpt);
-        return;
-      }
+      const groups = new Map();
+      ALL_WORLD_TIMEZONES.forEach(tz => {
+        const slashIdx = tz.indexOf('/');
+        const groupName = slashIdx > 0 ? tz.slice(0, slashIdx) : 'Other';
+        if (!groups.has(groupName)) groups.set(groupName, []);
+        groups.get(groupName).push(tz);
+      });
 
-      // Group by continent/region when not searching for clean browsing
-      if (!q) {
-        const groups = new Map();
-        filtered.forEach(item => {
-          const grp = item.region || 'Global';
-          if (!groups.has(grp)) groups.set(grp, []);
-          groups.get(grp).push(item);
-        });
-
-        groups.forEach((items, regionName) => {
-          const optGroup = document.createElement('optgroup');
-          optGroup.label = regionName;
-          items.forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item.id;
-            opt.textContent = item.label;
-            optGroup.appendChild(opt);
-          });
-          selectEl.appendChild(optGroup);
-        });
-      } else {
-        filtered.forEach(item => {
+      groups.forEach((zones, groupName) => {
+        const optGroup = document.createElement('optgroup');
+        optGroup.label = groupName.replace(/_/g, ' ');
+        zones.forEach(tz => {
           const opt = document.createElement('option');
-          opt.value = item.id;
-          opt.textContent = item.label;
-          selectEl.appendChild(opt);
+          opt.value = tz;
+          opt.textContent = formatTimezoneLabel(tz);
+          optGroup.appendChild(opt);
         });
-      }
+        selectEl.appendChild(optGroup);
+      });
 
-      if (filtered.some(item => item.id === currentTz)) {
-        selectEl.value = currentTz;
-      } else if (filtered.length > 0 && q) {
-        // Auto-select first matching result when user searches
-        selectEl.value = filtered[0].id;
-        appState.timezone = filtered[0].id;
-        saveState();
-        updateLiveCountryClock();
-        renderKPIs();
-        renderWeeklyChart();
-        renderTasks();
+      if (!Array.from(selectEl.options).some(o => o.value === currentTz)) {
+        const extra = document.createElement('option');
+        extra.value = currentTz;
+        extra.textContent = formatTimezoneLabel(currentTz);
+        selectEl.prepend(extra);
       }
-    }
-
-    function updateLiveCountryClock() {
-      const tz = getActiveTimezone();
-      const clockEl = document.getElementById('live-country-clock');
-      clockEl.textContent = formatTimeOnlyInTimezone(new Date(), tz);
+      selectEl.value = currentTz;
     }
 
     // =========================================================================
@@ -1089,12 +944,10 @@
             linkedTask.completed = true;
             linkedTask.completedDate = today;
             linkedTask.completedAtIso = nowIso;
-            linkedTask.completedAtLabel = completedStamp;
           } else {
             linkedTask.completed = false;
             linkedTask.completedDate = null;
             linkedTask.completedAtIso = null;
-            linkedTask.completedAtLabel = null;
           }
 
           dayRecord.entries.unshift({
@@ -1200,7 +1053,7 @@
     }
 
     // =========================================================================
-    // PRIORITY TASK MANAGER (WITH GLOBAL DATE & TIME STAMP)
+    // PRIORITY TASK MANAGER
     // =========================================================================
 
     function addTask(title, priority, block, estSessions) {
@@ -1216,7 +1069,6 @@
         completed: false,
         completedDate: null,
         completedAtIso: null,
-        completedAtLabel: null,
         createdAt: getDateKeyInTimezone(0, tz),
       };
       appState.tasks.unshift(newTask);
@@ -1245,7 +1097,6 @@
       if (task.completed) {
         task.completedDate = today;
         task.completedAtIso = nowIso;
-        task.completedAtLabel = completedStamp;
         task.completedSessions = task.estSessions;
 
         const alreadyCompletedEntry = dayRecord.entries.find(
@@ -1302,7 +1153,6 @@
         }
         task.completedDate = null;
         task.completedAtIso = null;
-        task.completedAtLabel = null;
         appState.activeTaskId = task.id;
       }
 
@@ -1393,7 +1243,7 @@
         container.innerHTML = `
           <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above — completion date &amp; exact time adapt to any timezone worldwide.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above to track focus sessions.</p>
           </div>
         `;
       } else {
@@ -1404,11 +1254,9 @@
             ? `Done (${task.completedSessions}/${task.estSessions})`
             : `${sessionsLeft} left (${task.completedSessions}/${task.estSessions})`;
 
-          const doneStampText = task.completed
-            ? (task.completedAtIso
-                ? formatCompletionTimestamp(task.completedAtIso, activeTz)
-                : (task.completedAtLabel || task.completedDate || ''))
-            : '';
+          const doneStampText = task.completed && task.completedAtIso
+            ? formatCompletionTimestamp(task.completedAtIso, activeTz)
+            : (task.completedDate || '');
 
           const card = document.createElement('div');
           card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
@@ -1712,7 +1560,7 @@
       document.getElementById('toast-message').textContent = msg;
       banner.classList.remove('opacity-0');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => banner.classList.add('opacity-0'), 2800);
+      toastTimer = setTimeout(() => banner.classList.add('opacity-0'), 2600);
     }
 
     function openSettingsModal() {
@@ -1727,32 +1575,13 @@
       document.getElementById('modal-settings').classList.add('hidden');
     }
 
-    document.getElementById('input-search-timezone').addEventListener('input', (e) => {
-      renderTimezoneOptions(e.target.value);
-    });
-
     document.getElementById('select-user-timezone').addEventListener('change', (e) => {
       appState.timezone = e.target.value;
       saveState();
-      updateLiveCountryClock();
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
-      const meta = getTimezoneMeta(appState.timezone);
-      showToast(`Zona waktu diset ke ${meta.label}`);
-    });
-
-    document.getElementById('btn-auto-detect-tz').addEventListener('click', () => {
-      const detected = detectDeviceTimezone();
-      appState.timezone = detected;
-      saveState();
-      document.getElementById('input-search-timezone').value = '';
-      renderTimezoneOptions('');
-      updateLiveCountryClock();
-      renderKPIs();
-      renderWeeklyChart();
-      renderTasks();
-      showToast(`Auto-detected: ${getTimezoneMeta(detected).label}`);
+      showToast(formatTimezoneLabel(appState.timezone));
     });
 
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
@@ -1892,10 +1721,7 @@
       });
       document.getElementById('header-date-display').textContent = dateStr;
 
-      renderTimezoneOptions('');
-      updateLiveCountryClock();
-      setInterval(updateLiveCountryClock, 15000);
-
+      initTimezoneDropdown();
       applyTheme(appState.theme);
       updateMuteIcon();
       updateSoundscapeButtons();
