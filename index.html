@@ -104,7 +104,7 @@
         <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals & Daily Goal">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l-.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
           <span class="hidden sm:inline">Intervals</span>
         </button>
@@ -335,24 +335,37 @@
         </section>
       </div>
 
-      <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCKING MANAGER -->
+      <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCK MANAGER -->
       <section class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
 
-        <!-- Header, GMT Offset Selector & Filters -->
+        <!-- Header, Live GMT Clock + Auto Detector & Filters -->
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with timer</p>
           </div>
 
-          <div class="flex items-center gap-2">
-            <select
-              id="select-user-timezone"
-              aria-label="GMT Offset"
-              class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <!-- Populated with GMT-12 to GMT+14 -->
-            </select>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Live Clock + GMT Offset Selector + Auto Detect Button -->
+            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-live-dot shrink-0"></span>
+              <span id="live-gmt-clock" class="font-mono text-xs font-bold text-slate-800 dark:text-slate-100 tabular-nums">00:00:00</span>
+              <select
+                id="select-user-timezone"
+                aria-label="GMT Offset"
+                class="bg-transparent font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer"
+              >
+                <!-- Populated with GMT-12 to GMT+14 -->
+              </select>
+              <button
+                type="button"
+                id="btn-auto-gmt"
+                title="Detect Device GMT Automatically"
+                class="ml-0.5 px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+              >
+                Auto
+              </button>
+            </div>
 
             <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
               <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg transition">All</button>
@@ -511,14 +524,13 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v7';
+    const STORAGE_KEY = 'chronosflow_persistent_v8';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
     const GMT_OFFSETS = (() => {
       const list = [];
       for (let mins = -720; mins <= 840; mins += 30) {
-        // Include standard 30-min and key 45-min offsets (e.g. +5:45 Nepal, +12:45 Chatham)
         if (Math.abs(mins) % 60 === 30 || mins === 345 || mins === 765) {
           const sign = mins >= 0 ? '+' : '-';
           const abs = Math.abs(mins);
@@ -540,7 +552,6 @@
     }
 
     function detectLocalGmtOffsetMinutes() {
-      // JS getTimezoneOffset() returns minutes behind UTC (e.g. -420 for GMT+7)
       return -new Date().getTimezoneOffset();
     }
 
@@ -550,7 +561,6 @@
         : detectLocalGmtOffsetMinutes();
     }
 
-    // Shift real UTC epoch by selected GMT offset and format via UTC methods
     function getShiftedDate(dateObj = new Date(), offsetMinutes = getActiveGmtOffset()) {
       return new Date(dateObj.getTime() + offsetMinutes * 60000);
     }
@@ -573,6 +583,26 @@
       const mm = String(shifted.getUTCMinutes()).padStart(2, '0');
       const gmtLabel = formatGmtOffsetLabel(offsetMinutes);
       return `${d} ${m} ${y}, ${hh}:${mm} ${gmtLabel}`;
+    }
+
+    function updateLiveClockAndHeader() {
+      const gmtOffset = getActiveGmtOffset();
+      const shifted = getShiftedDate(new Date(), gmtOffset);
+      const hh = String(shifted.getUTCHours()).padStart(2, '0');
+      const mm = String(shifted.getUTCMinutes()).padStart(2, '0');
+      const ss = String(shifted.getUTCSeconds()).padStart(2, '0');
+
+      const clockEl = document.getElementById('live-gmt-clock');
+      if (clockEl) {
+        clockEl.textContent = `${hh}:${mm}:${ss}`;
+      }
+
+      const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const headerDateEl = document.getElementById('header-date-display');
+      if (headerDateEl) {
+        headerDateEl.textContent = `${weekdays[shifted.getUTCDay()]}, ${months[shifted.getUTCMonth()]} ${shifted.getUTCDate()} • ${formatGmtOffsetLabel(gmtOffset)}`;
+      }
     }
 
     function createEmptyState() {
@@ -689,6 +719,20 @@
       }
 
       selectEl.value = String(currentOffset);
+    }
+
+    function applyDetectedDeviceGmt(notify = true) {
+      const detected = detectLocalGmtOffsetMinutes();
+      appState.gmtOffsetMinutes = detected;
+      saveState();
+      initGmtDropdown();
+      updateLiveClockAndHeader();
+      renderKPIs();
+      renderWeeklyChart();
+      renderTasks();
+      if (notify) {
+        showToast(`Auto GMT: ${formatGmtOffsetLabel(detected)}`);
+      }
     }
 
     // =========================================================================
@@ -1541,10 +1585,15 @@
     document.getElementById('select-user-timezone').addEventListener('change', (e) => {
       appState.gmtOffsetMinutes = Number(e.target.value);
       saveState();
+      updateLiveClockAndHeader();
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
       showToast(formatGmtOffsetLabel(appState.gmtOffsetMinutes));
+    });
+
+    document.getElementById('btn-auto-gmt').addEventListener('click', () => {
+      applyDetectedDeviceGmt(true);
     });
 
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
@@ -1613,11 +1662,12 @@
     document.getElementById('btn-reset-all').addEventListener('click', () => {
       if (!confirm('Reset all saved tasks and weekly focus history?')) return;
       const currentTheme = appState.theme;
-      const currentGmt = appState.gmtOffsetMinutes;
       appState = createEmptyState();
       appState.theme = currentTheme;
-      appState.gmtOffsetMinutes = currentGmt;
+      appState.gmtOffsetMinutes = detectLocalGmtOffsetMinutes();
       saveState();
+      initGmtDropdown();
+      updateLiveClockAndHeader();
       switchTimerMode('focus');
       renderKPIs();
       renderWeeklyChart();
@@ -1677,14 +1727,10 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      const dateStr = new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric',
-      });
-      document.getElementById('header-date-display').textContent = dateStr;
-
       initGmtDropdown();
+      updateLiveClockAndHeader();
+      setInterval(updateLiveClockAndHeader, 1000);
+
       applyTheme(appState.theme);
       updateMuteIcon();
       updateSoundscapeButtons();
