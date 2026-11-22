@@ -58,8 +58,8 @@
 
     @keyframes alarmShake {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+      20%, 60% { transform: translateX(-7px); }
+      40%, 80% { transform: translateX(7px); }
     }
     .animate-shake {
       animation: alarmShake 0.45s ease-in-out;
@@ -90,17 +90,17 @@
     <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
-        <span>STRICT LOCKDOWN ACTIVE — Exit &amp; task switching disabled until timer finishes!</span>
+        <span>LOCKDOWN ENFORCED — Tidak bisa keluar sampai timer selesai!</span>
         <span id="lockdown-violation-badge" class="px-2 py-0.5 rounded-md bg-rose-800 font-mono text-[11px]">
           Escape attempts: 0
         </span>
       </div>
       <div class="flex items-center gap-2">
         <button id="btn-reenter-fullscreen" type="button" class="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-[11px] font-bold transition">
-          Lock Fullscreen
+          Force Fullscreen
         </button>
-        <button id="btn-emergency-hold" type="button" class="px-2.5 py-1 rounded-lg bg-rose-900/80 hover:bg-rose-950 text-[11px] font-mono transition" title="Hold for 5 seconds to force unlock">
-          Hold 5s Emergency Unlock
+        <button id="btn-emergency-hold" type="button" class="px-2.5 py-1 rounded-lg bg-rose-900/80 hover:bg-rose-950 text-[11px] font-mono transition" title="Hold for 10 seconds to force unlock">
+          Hold 10s Override
         </button>
       </div>
     </div>
@@ -248,7 +248,7 @@
     <!-- ROW 2: MAIN FOCUS ENGINE (LEFT) + TASK & TIME-BLOCK MANAGER (RIGHT) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- LEFT COLUMN (5 cols): POMODORO TIMER, ALLOWED APP LAUNCHER, AMBIENT AUDIO & WEEKLY CHART -->
+      <!-- LEFT COLUMN (5 cols): POMODORO TIMER, AUTHORIZED WORKSPACE, AMBIENT AUDIO & WEEKLY CHART -->
       <div class="lg:col-span-5 flex flex-col gap-6">
 
         <!-- Pomodoro Focus Card -->
@@ -294,7 +294,7 @@
             </div>
           </div>
 
-          <!-- Active Task Banner + Allowed App / Website Launcher -->
+          <!-- Active Task Banner + Authorized Workspace Launcher -->
           <div class="w-full mb-5 px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5 text-left">
             <div class="flex items-center justify-between gap-2">
               <div class="min-w-0 flex-1">
@@ -313,20 +313,19 @@
               </button>
             </div>
 
-            <!-- Allowed App / Website Launch Bar (Only opens when Focus/Task is active) -->
+            <!-- Authorized Target Box -->
             <div id="allowed-target-box" class="hidden pt-2 border-t border-slate-200/70 dark:border-slate-700/70 flex items-center justify-between gap-2">
               <div class="min-w-0 flex-1">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Allowed App / Website
+                  Authorized App / Website
                 </span>
                 <span id="allowed-target-label" class="block text-xs font-mono text-slate-600 dark:text-slate-300 truncate"></span>
               </div>
               <button id="btn-launch-allowed-target" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1 shrink-0">
-                <span>Open Locked App</span>
+                <span>Buka &amp; Kunci</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
               </button>
             </div>
@@ -403,7 +402,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Assign allowed app/website to lock yourself into your workflow</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Set target website/app &amp; lock into your session</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -444,7 +443,7 @@
               type="text"
               required
               maxlength="90"
-              placeholder="What do you want to accomplish or rest on?"
+              placeholder="Contoh: Baca buku bab 3"
               class="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button type="submit" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
@@ -453,13 +452,13 @@
             </button>
           </div>
 
-          <!-- Allowed App / Website Target Input -->
+          <!-- Authorized App / Website Target Input -->
           <div>
             <input
               id="input-task-target-url"
               type="text"
               maxlength="180"
-              placeholder="Allowed Website or App URI (optional, e.g. https://docs.google.com or notion://)"
+              placeholder="Website atau App URI yang diotorisasi (contoh: https://gutenberg.org atau kindle://)"
               class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -519,6 +518,59 @@
   </main>
 
   <!-- ===================================================================== -->
+  <!-- MODAL -1: AUTHORIZED IN-APP WORKSPACE VIEW (DOMAIN-LOCKED)            -->
+  <!-- ===================================================================== -->
+  <div id="modal-authorized-workspace" class="hidden fixed inset-0 z-[65] bg-slate-950 flex flex-col text-white">
+    <div class="h-14 px-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+        <div class="min-w-0">
+          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Authorized Workspace Lock</div>
+          <div id="workspace-authorized-host" class="text-xs font-mono text-slate-300 truncate"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 font-mono text-sm font-bold text-rose-400 tabular-nums">
+          <span id="workspace-timer-readout">25:00</span>
+        </div>
+        <button id="btn-workspace-try-exit" type="button" class="px-3 py-1.5 rounded-xl bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs font-semibold">
+          Terkunci 🔒
+        </button>
+      </div>
+    </div>
+
+    <div id="workspace-domain-block-banner" class="hidden bg-amber-500/95 text-slate-950 px-4 py-2 text-xs font-bold text-center shrink-0">
+      Akses ke domain luar diblokir! Kamu hanya diizinkan berada di domain yang telah diotorisasi untuk task ini.
+    </div>
+
+    <div class="relative flex-1 bg-white">
+      <iframe
+        id="workspace-iframe"
+        src="about:blank"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        class="w-full h-full border-0"
+      ></iframe>
+
+      <!-- Fallback card if target website blocks iframe embedding (X-Frame-Options) -->
+      <div id="workspace-external-fallback" class="hidden absolute inset-0 bg-slate-950 text-white flex items-center justify-center p-6">
+        <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-4">
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300">
+            External Target Mode
+          </span>
+          <h3 class="text-lg font-bold">Aplikasi / Website Target</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Target ini dibuka di jalur khusus terotorisasi (<span id="workspace-fallback-target" class="font-mono text-emerald-400"></span>). Di build <strong>.apk Android</strong>, sistem akan mengunci akses hanya ke aplikasi/website ini sampai timer habis.
+          </p>
+          <button id="btn-workspace-relaunch-external" type="button" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
+            Buka Ulang Target Terotorisasi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- MODAL 0: ESCAPE ATTEMPT / STRICT LOCKDOWN VIOLATION OVERLAY           -->
   <!-- ===================================================================== -->
   <div id="modal-lockdown-alert" class="hidden fixed inset-0 z-[70] bg-rose-950/95 backdrop-blur-md flex items-center justify-center p-4 text-white">
@@ -533,9 +585,9 @@
         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-rose-600 text-white">
           Escape Blocked
         </span>
-        <h2 class="text-xl font-bold mt-2">Mau kabur ke mana?!</h2>
+        <h2 class="text-xl font-bold mt-2">Tidak Bisa Kabur!</h2>
         <p id="lockdown-alert-reason" class="text-xs sm:text-sm text-slate-300 mt-1.5">
-          Kamu masih dalam sesi Focus! Kamu tidak diizinkan keluar dari aplikasi sebelum waktu selesai.
+          Kamu hanya boleh keluar setelah waktu fokus selesai.
         </p>
       </div>
 
@@ -545,7 +597,7 @@
       </div>
 
       <button id="btn-dismiss-lockdown-alert" type="button" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg transition">
-        Kembali Fokus Sekarang (Fullscreen)
+        Kembali ke Sesi Terkunci
       </button>
     </div>
   </div>
@@ -637,7 +689,7 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v11';
+    const STORAGE_KEY = 'chronosflow_persistent_v12';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
@@ -863,11 +915,12 @@
       ambientMode: 'off',
       selectedDetailDate: null,
       escapeAttempts: 0,
-      launchingAllowedWindow: false,
+      authorizedDomain: '',
+      workspaceOpen: false,
     };
 
     // =========================================================================
-    // STRICT LOCKDOWN & NATIVE APK KIOSK BRIDGE
+    // STRICT LOCKDOWN, AUTHORIZED LAUNCHER & NATIVE APK BRIDGE
     // =========================================================================
 
     function isFocusLockEngaged() {
@@ -892,12 +945,51 @@
     }
 
     // Native Android/Capacitor bridge hook when compiled into .apk
-    function syncNativeApkLockTask(locked, allowedPackageOrUrl = '') {
+    // Expected native contract: setAuthorizedLock(locked, targetUri, allowedHost)
+    function syncNativeApkAuthorization(locked, targetUri = '', allowedHost = '') {
       try {
-        if (window.ChronosNativeLock && typeof window.ChronosNativeLock.setLockState === 'function') {
-          window.ChronosNativeLock.setLockState(locked, allowedPackageOrUrl);
+        if (window.ChronosNativeLock) {
+          if (typeof window.ChronosNativeLock.setAuthorizedLock === 'function') {
+            window.ChronosNativeLock.setAuthorizedLock(locked, targetUri, allowedHost);
+          } else if (typeof window.ChronosNativeLock.setLockState === 'function') {
+            window.ChronosNativeLock.setLockState(locked, targetUri);
+          }
         }
       } catch (e) {}
+    }
+
+    function parseTargetDetails(rawTarget) {
+      const trimmed = (rawTarget || '').trim();
+      if (!trimmed) return null;
+
+      if (/^https?:\/\//i.test(trimmed)) {
+        try {
+          const parsed = new URL(trimmed);
+          return {
+            type: 'web',
+            uri: parsed.toString(),
+            host: parsed.hostname.replace(/^www\./i, '').toLowerCase(),
+          };
+        } catch (e) {
+          return { type: 'app', uri: trimmed, host: trimmed };
+        }
+      }
+
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+        return { type: 'app', uri: trimmed, host: trimmed };
+      }
+
+      // Bare domain like "gutenberg.org" or "archive.org/details/..."
+      try {
+        const parsed = new URL(`https://${trimmed}`);
+        return {
+          type: 'web',
+          uri: parsed.toString(),
+          host: parsed.hostname.replace(/^www\./i, '').toLowerCase(),
+        };
+      } catch (e) {
+        return { type: 'app', uri: trimmed, host: trimmed };
+      }
     }
 
     function triggerLockdownViolation(reasonText) {
@@ -919,20 +1011,68 @@
       AudioEngine.playAnnoyingSiren();
     }
 
-    function launchAllowedTarget(rawTarget) {
-      const cleaned = (rawTarget || '').trim();
-      if (!cleaned) return;
-      const url = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(cleaned) ? cleaned : `https://${cleaned}`;
+    function openAuthorizedWorkspace(rawTarget) {
+      const details = parseTargetDetails(rawTarget);
+      if (!details) return;
 
-      // Temporarily allow opening the permitted target without triggering escape alarm
-      runtime.launchingAllowedWindow = true;
-      setTimeout(() => {
-        runtime.launchingAllowedWindow = false;
-      }, 2500);
+      // Ensure focus timer starts & locks if user clicks "Buka & Kunci" directly
+      if (runtime.mode !== 'focus') {
+        switchTimerMode('focus', true);
+      }
+      if (!runtime.isRunning) {
+        startTimer();
+      }
 
-      syncNativeApkLockTask(true, url);
-      window.open(url, '_blank', 'noopener,noreferrer');
-      showToast(`Membuka workspace terizinkan: ${cleaned}`);
+      runtime.authorizedDomain = details.host;
+      syncNativeApkAuthorization(true, details.uri, details.host);
+
+      if (details.type === 'web') {
+        runtime.workspaceOpen = true;
+        document.getElementById('workspace-authorized-host').textContent = `Domain Lock: ${details.host}`;
+        document.getElementById('workspace-timer-readout').textContent = formatClock(runtime.remainingSeconds);
+        document.getElementById('workspace-domain-block-banner').classList.add('hidden');
+        document.getElementById('workspace-external-fallback').classList.add('hidden');
+
+        const iframe = document.getElementById('workspace-iframe');
+        iframe.src = details.uri;
+
+        // Guard iframe navigation so it cannot escape outside the authorized host
+        iframe.onload = () => {
+          try {
+            const loc = iframe.contentWindow?.location;
+            if (loc && loc.hostname && !loc.hostname.toLowerCase().includes(details.host)) {
+              iframe.src = details.uri;
+              document.getElementById('workspace-domain-block-banner').classList.remove('hidden');
+              AudioEngine.playAnnoyingSiren();
+            }
+          } catch (e) {
+            // Cross-origin frame security: keep host locked in state
+          }
+        };
+
+        document.getElementById('modal-authorized-workspace').classList.remove('hidden');
+        showToast(`Workspace terkunci ke ${details.host} hingga timer selesai!`);
+      } else {
+        // Custom app URI (e.g., kindle://, notion://, intent://)
+        document.getElementById('workspace-authorized-host').textContent = `App Lock: ${details.uri}`;
+        document.getElementById('workspace-timer-readout').textContent = formatClock(runtime.remainingSeconds);
+        document.getElementById('workspace-fallback-target').textContent = details.uri;
+        document.getElementById('workspace-external-fallback').classList.remove('hidden');
+        document.getElementById('workspace-iframe').src = 'about:blank';
+        runtime.workspaceOpen = true;
+        document.getElementById('modal-authorized-workspace').classList.remove('hidden');
+
+        try {
+          window.location.href = details.uri;
+        } catch (e) {}
+        showToast(`Membuka ${details.uri} dengan otorisasi Focus Lock`);
+      }
+    }
+
+    function closeAuthorizedWorkspaceModal() {
+      runtime.workspaceOpen = false;
+      document.getElementById('modal-authorized-workspace').classList.add('hidden');
+      document.getElementById('workspace-iframe').src = 'about:blank';
     }
 
     function updateStrictModeButtonUI() {
@@ -984,7 +1124,7 @@
     }
 
     // =========================================================================
-    // WEB AUDIO API ENGINE (CHIME + ANNOYING SIREN + AMBIENT)
+    // WEB AUDIO API ENGINE (CHIME + SIREN + AMBIENT)
     // =========================================================================
     const AudioEngine = (() => {
       let ctx = null;
@@ -1031,21 +1171,21 @@
         try {
           const audioCtx = ensureContext();
           const now = audioCtx.currentTime;
-          const beeps = [880, 620, 960, 580, 1040];
+          const beeps = [880, 620, 960, 580, 1040, 640];
 
           beeps.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+            osc.frequency.setValueAtTime(freq, now + idx * 0.11);
 
-            gain.gain.setValueAtTime(0.16, now + idx * 0.12);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.11);
+            gain.gain.setValueAtTime(0.16, now + idx * 0.11);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.10);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            osc.start(now + idx * 0.12);
-            osc.stop(now + idx * 0.12 + 0.115);
+            osc.start(now + idx * 0.11);
+            osc.stop(now + idx * 0.11 + 0.105);
           });
         } catch (e) {}
       }
@@ -1145,7 +1285,7 @@
 
     function switchTimerMode(mode, bypassLock = false) {
       if (!bypassLock && isFocusLockEngaged()) {
-        triggerLockdownViolation('Mode timer terkunci selama sesi Focus berjalan! Selesaikan waktumu dulu.');
+        triggerLockdownViolation('Mode timer terkunci total selama sesi Focus berjalan! Tunggu sampai waktu habis.');
         return;
       }
       pauseTimer(true);
@@ -1166,7 +1306,8 @@
         runtime.escapeAttempts = 0;
         document.getElementById('lockdown-violation-badge').textContent = 'Escape attempts: 0';
         const activeTask = resolveActiveTaskForMode('focus');
-        syncNativeApkLockTask(true, activeTask?.allowedTarget || '');
+        const details = parseTargetDetails(activeTask?.allowedTarget || '');
+        syncNativeApkAuthorization(true, details?.uri || '', details?.host || '');
         requestBrowserFullscreen();
       }
 
@@ -1177,8 +1318,12 @@
         runtime.remainingSeconds = secsLeft;
         updateTimerUI();
 
+        const clockFormatted = formatClock(secsLeft);
+        if (runtime.workspaceOpen) {
+          document.getElementById('workspace-timer-readout').textContent = clockFormatted;
+        }
         if (!document.getElementById('modal-lockdown-alert').classList.contains('hidden')) {
-          document.getElementById('lockdown-alert-remaining').textContent = formatClock(secsLeft);
+          document.getElementById('lockdown-alert-remaining').textContent = clockFormatted;
         }
 
         if (secsLeft <= 0) {
@@ -1189,7 +1334,7 @@
 
     function pauseTimer(bypassLock = false) {
       if (!bypassLock && isFocusLockEngaged()) {
-        triggerLockdownViolation('Tombol Pause dikunci! Kamu tidak boleh berhenti di tengah sesi Focus.');
+        triggerLockdownViolation('Pause dikunci! Sesi Focus tidak bisa dihentikan sebelum waktunya selesai.');
         return;
       }
       if (runtime.isRunning && runtime.endTimestamp) {
@@ -1197,11 +1342,12 @@
       }
       runtime.isRunning = false;
       runtime.endTimestamp = null;
+      runtime.authorizedDomain = '';
       if (runtime.intervalId) {
         clearInterval(runtime.intervalId);
         runtime.intervalId = null;
       }
-      syncNativeApkLockTask(false, '');
+      syncNativeApkAuthorization(false, '', '');
       updateTimerUI();
     }
 
@@ -1215,7 +1361,7 @@
 
     function resetTimer() {
       if (isFocusLockEngaged()) {
-        triggerLockdownViolation('Tombol Reset dikunci selama sesi Focus! Selesaikan sampai 00:00.');
+        triggerLockdownViolation('Reset dikunci selama sesi Focus! Selesaikan sampai 00:00.');
         return;
       }
       pauseTimer(true);
@@ -1226,11 +1372,12 @@
 
     function completeCurrentSession(fromNaturalZero = false) {
       if (!fromNaturalZero && isFocusLockEngaged()) {
-        triggerLockdownViolation('Tombol Skip dikunci! Kamu tidak boleh mempercepat waktu Focus.');
+        triggerLockdownViolation('Skip dikunci! Kamu baru boleh keluar setelah waktunya selesai.');
         return;
       }
 
       pauseTimer(true);
+      closeAuthorizedWorkspaceModal();
       document.getElementById('modal-lockdown-alert').classList.add('hidden');
       exitBrowserFullscreen();
       AudioEngine.playCompletionChime();
@@ -1377,7 +1524,7 @@
           toggleBtn.className = 'flex-1 max-w-[210px] py-3.5 px-6 rounded-2xl bg-rose-600 text-white font-semibold text-sm shadow-md cursor-not-allowed flex items-center justify-center gap-2';
           resetBtn.classList.add('opacity-40', 'cursor-not-allowed');
           skipBtn.classList.add('opacity-40', 'cursor-not-allowed');
-          hintEl.textContent = 'Strict Lockdown active — escape disabled';
+          hintEl.textContent = 'Strict Lockdown aktif — tidak bisa keluar';
         } else {
           document.getElementById('icon-timer-play').classList.add('hidden');
           document.getElementById('icon-timer-pause').classList.remove('hidden');
@@ -1736,7 +1883,7 @@
                   </span>
                   ${
                     task.allowedTarget
-                      ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-mono text-[10px] truncate max-w-[160px]" title="Allowed App/Site: ${escapeHTML(task.allowedTarget)}">🔗 ${escapeHTML(task.allowedTarget)}</span>`
+                      ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-mono text-[10px] truncate max-w-[160px]" title="Authorized App/Site: ${escapeHTML(task.allowedTarget)}">🔒 ${escapeHTML(task.allowedTarget)}</span>`
                       : ''
                   }
                   ${
@@ -2040,21 +2187,21 @@
 
     // Strict Lockdown Anti-Escape Event Listeners
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && isFocusLockEngaged() && !runtime.launchingAllowedWindow) {
-        triggerLockdownViolation('Terdeteksi pindah tab / keluar aplikasi saat Focus berlangsung!');
+      if (document.hidden && isFocusLockEngaged()) {
+        triggerLockdownViolation('Kamu mencoba keluar dari aplikasi/tab saat mode Focus masih berjalan!');
       }
     });
 
     document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement && isFocusLockEngaged() && !runtime.launchingAllowedWindow) {
-        triggerLockdownViolation('Kamu keluar dari mode Fullscreen saat sesi Focus masih berjalan!');
+      if (!document.fullscreenElement && isFocusLockEngaged()) {
+        triggerLockdownViolation('Fullscreen dipaksa ditutup! Sesi Focus masih terkunci sampai waktu habis.');
       }
     });
 
     window.addEventListener('beforeunload', (e) => {
       if (isFocusLockEngaged()) {
         e.preventDefault();
-        e.returnValue = 'Sesi Focus masih terkunci!';
+        e.returnValue = 'Sesi Focus masih terkunci sampai waktunya selesai!';
         return e.returnValue;
       }
     });
@@ -2064,11 +2211,26 @@
       requestBrowserFullscreen();
     });
 
+    document.getElementById('btn-workspace-try-exit').addEventListener('click', () => {
+      triggerLockdownViolation('Workspace terotorisasi terkunci! Tidak bisa keluar sebelum timer selesai.');
+    });
+
+    document.getElementById('btn-workspace-relaunch-external').addEventListener('click', () => {
+      const activeTask = resolveActiveTaskForMode('focus');
+      if (activeTask?.allowedTarget) {
+        const details = parseTargetDetails(activeTask.allowedTarget);
+        syncNativeApkAuthorization(true, details?.uri || '', details?.host || '');
+        try {
+          window.location.href = details?.uri || activeTask.allowedTarget;
+        } catch (e) {}
+      }
+    });
+
     document.getElementById('btn-reenter-fullscreen').addEventListener('click', () => {
       requestBrowserFullscreen();
     });
 
-    // 5-second Emergency Hold Unlock (prevents accidental tap, only opens if held 5s)
+    // 10-second Emergency Override Hold
     (() => {
       const holdBtn = document.getElementById('btn-emergency-hold');
       let holdTimer = null;
@@ -2077,25 +2239,26 @@
       function cancelHold() {
         clearTimeout(holdTimer);
         clearInterval(countdownInterval);
-        holdBtn.textContent = 'Hold 5s Emergency Unlock';
+        holdBtn.textContent = 'Hold 10s Override';
       }
 
       function startHold() {
-        let secs = 5;
-        holdBtn.textContent = `Holding... ${secs}s`;
+        let secs = 10;
+        holdBtn.textContent = `Override... ${secs}s`;
         countdownInterval = setInterval(() => {
           secs -= 1;
-          if (secs > 0) holdBtn.textContent = `Holding... ${secs}s`;
+          if (secs > 0) holdBtn.textContent = `Override... ${secs}s`;
         }, 1000);
 
         holdTimer = setTimeout(() => {
           clearInterval(countdownInterval);
-          holdBtn.textContent = 'Hold 5s Emergency Unlock';
+          holdBtn.textContent = 'Hold 10s Override';
           pauseTimer(true);
+          closeAuthorizedWorkspaceModal();
           exitBrowserFullscreen();
           document.getElementById('modal-lockdown-alert').classList.add('hidden');
-          showToast('Emergency unlock berhasil.');
-        }, 5000);
+          showToast('Override 10 detik berhasil.');
+        }, 10000);
       }
 
       holdBtn.addEventListener('mousedown', startHold);
@@ -2119,7 +2282,7 @@
     document.getElementById('btn-launch-allowed-target').addEventListener('click', () => {
       const activeTask = resolveActiveTaskForMode(runtime.mode);
       if (activeTask && activeTask.allowedTarget) {
-        launchAllowedTarget(activeTask.allowedTarget);
+        openAuthorizedWorkspace(activeTask.allowedTarget);
       }
     });
 
