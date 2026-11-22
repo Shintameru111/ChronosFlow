@@ -104,7 +104,7 @@
         <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals & Daily Goal">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l-.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
           <span class="hidden sm:inline">Intervals</span>
         </button>
@@ -414,7 +414,7 @@
 
             <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
               <span class="text-slate-400">Sessions:</span>
-              <input id="input-task-est" type="number" min="1" max="10" value="1" class="w-10 bg-transparent font-mono font-semibold text-slate-700 dark:text-slate-200 focus:outline-none text-center" />
+              <input id="input-task-est" type="number" min="1" max="20" value="1" class="w-12 bg-transparent font-mono font-semibold text-slate-700 dark:text-slate-200 focus:outline-none text-center" />
             </label>
           </div>
         </form>
@@ -524,7 +524,7 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v8';
+    const STORAGE_KEY = 'chronosflow_persistent_v9';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
@@ -665,8 +665,20 @@
       return appState.dailyHistory[dateKey];
     }
 
+    function getTotalSessions(task) {
+      return Math.max(1, parseInt(task.estSessions, 10) || 1);
+    }
+
+    function getCompletedSessions(task) {
+      const total = getTotalSessions(task);
+      const rawDone = Math.max(0, parseInt(task.completedSessions, 10) || 0);
+      if (task.completed) return total;
+      return Math.min(total, rawDone);
+    }
+
     function getRemainingSessions(task) {
-      return Math.max(0, (task.estSessions || 1) - (task.completedSessions || 0));
+      if (task.completed) return 0;
+      return Math.max(0, getTotalSessions(task) - getCompletedSessions(task));
     }
 
     function calculateStreak() {
@@ -936,16 +948,20 @@
         dayRecord.minutes += loggedMin;
         dayRecord.sessions += 1;
 
-        let linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId);
+        let linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
         if (!linkedTask) {
           linkedTask = appState.tasks.find(t => !t.completed) || null;
           if (linkedTask) appState.activeTaskId = linkedTask.id;
         }
 
         if (linkedTask) {
-          linkedTask.completedSessions = (linkedTask.completedSessions || 0) + 1;
-          const leftAfterSession = getRemainingSessions(linkedTask);
-          const isNowFinished = leftAfterSession <= 0;
+          const totalSessions = getTotalSessions(linkedTask);
+          const nextDoneSessions = Math.min(totalSessions, getCompletedSessions(linkedTask) + 1);
+          linkedTask.estSessions = totalSessions;
+          linkedTask.completedSessions = nextDoneSessions;
+
+          const sessionsLeft = Math.max(0, totalSessions - nextDoneSessions);
+          const isNowFinished = sessionsLeft === 0;
 
           if (isNowFinished) {
             linkedTask.completed = true;
@@ -959,7 +975,7 @@
 
           dayRecord.entries.unshift({
             taskId: linkedTask.id,
-            title: linkedTask.title,
+            title: `${linkedTask.title} (${nextDoneSessions}/${totalSessions})`,
             priority: linkedTask.priority,
             block: linkedTask.block,
             minutes: loggedMin,
@@ -970,9 +986,9 @@
           if (isNowFinished) {
             const nextTask = appState.tasks.find(t => !t.completed && t.id !== linkedTask.id);
             appState.activeTaskId = nextTask ? nextTask.id : null;
-            showToast(`Selesai (${completedStamp}) & otomatis tercentang!`);
+            showToast(`Sesi ${nextDoneSessions}/${totalSessions} beres! Task otomatis tercentang (${completedStamp})`);
           } else {
-            showToast(`1 sesi selesai! Sisa ${leftAfterSession} sesi lagi.`);
+            showToast(`Sesi ${nextDoneSessions}/${totalSessions} selesai! Sisa ${sessionsLeft} sesi lagi.`);
           }
         } else {
           dayRecord.entries.unshift({
@@ -1048,9 +1064,11 @@
       const sessionsLeftEl = document.getElementById('active-task-sessions-left');
       const unlinkBtn = document.getElementById('btn-unlink-task');
       if (activeTask) {
+        const total = getTotalSessions(activeTask);
+        const done = getCompletedSessions(activeTask);
         const left = getRemainingSessions(activeTask);
         taskTitleEl.textContent = activeTask.title;
-        sessionsLeftEl.textContent = `${left} session${left === 1 ? '' : 's'} left`;
+        sessionsLeftEl.textContent = `${left} left (${done}/${total})`;
         unlinkBtn.classList.remove('hidden');
       } else {
         taskTitleEl.textContent = 'Select a task from your queue →';
@@ -1098,13 +1116,14 @@
       const today = getDateKeyInGmt(0, gmtOffset);
       const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
       const dayRecord = ensureDayRecord(today);
+      const totalSessions = getTotalSessions(task);
 
       task.completed = !task.completed;
 
       if (task.completed) {
         task.completedDate = today;
         task.completedAtIso = nowIso;
-        task.completedSessions = task.estSessions;
+        task.completedSessions = totalSessions;
 
         const alreadyCompletedEntry = dayRecord.entries.find(
           e => e.taskId === task.id && e.status === 'completed'
@@ -1123,7 +1142,7 @@
 
           dayRecord.entries.unshift({
             taskId: task.id,
-            title: task.title,
+            title: `${task.title} (${totalSessions}/${totalSessions})`,
             priority: task.priority,
             block: task.block,
             minutes: creditMinutes > 0 ? creditMinutes : existingTaskMinsToday,
@@ -1139,7 +1158,7 @@
 
         showToast(`Selesai (${completedStamp}) & masuk Weekly Focus!`);
       } else {
-        task.completedSessions = Math.max(0, task.estSessions - 1);
+        task.completedSessions = Math.max(0, totalSessions - 1);
         const prevDate = task.completedDate || today;
         const targetDay = appState.dailyHistory[prevDate];
         if (targetDay) {
@@ -1175,10 +1194,16 @@
       if (!task) return;
       const updated = prompt('Edit task title:', task.title);
       if (updated && updated.trim()) {
+        const total = getTotalSessions(task);
+        const done = getCompletedSessions(task);
         task.title = updated.trim();
         Object.values(appState.dailyHistory).forEach(day => {
           day.entries.forEach(entry => {
-            if (entry.taskId === id) entry.title = task.title;
+            if (entry.taskId === id) {
+              entry.title = entry.status === 'completed'
+                ? `${task.title} (${total}/${total})`
+                : `${task.title} (${done}/${total})`;
+            }
           });
         });
         saveState();
@@ -1256,10 +1281,13 @@
       } else {
         filtered.forEach(task => {
           const isLinked = task.id === appState.activeTaskId && !task.completed;
+          const totalSessions = getTotalSessions(task);
+          const doneSessions = getCompletedSessions(task);
           const sessionsLeft = getRemainingSessions(task);
+
           const sessionBadgeText = task.completed
-            ? `Done (${task.completedSessions}/${task.estSessions})`
-            : `${sessionsLeft} left (${task.completedSessions}/${task.estSessions})`;
+            ? `Done (${doneSessions}/${totalSessions})`
+            : `${sessionsLeft} left (${doneSessions}/${totalSessions})`;
 
           const doneStampText = task.completed && task.completedAtIso
             ? formatCompletionTimestamp(task.completedAtIso, gmtOffset)
