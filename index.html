@@ -94,7 +94,7 @@
               Focus OS
             </span>
           </div>
-          <p id="header-date-display" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Personal Productivity Workspace</p>
+          <p id="header-date-display" class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">Loading date &amp; time...</p>
         </div>
       </div>
 
@@ -253,12 +253,12 @@
             </div>
           </div>
 
-          <!-- Active Task Banner (Linked Task) -->
+          <!-- Active Task Banner (Linked Task for Current Timer Mode) -->
           <div class="w-full mb-5 px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-2 text-left">
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  Working On
+                <span id="active-task-mode-badge" class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                  Working On (Focus)
                 </span>
                 <span id="active-task-sessions-left" class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400"></span>
               </div>
@@ -342,7 +342,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with timer</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with matching timer mode</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -383,7 +383,7 @@
               type="text"
               required
               maxlength="90"
-              placeholder="What do you want to accomplish?"
+              placeholder="What do you want to accomplish or rest on?"
               class="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button type="submit" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-1.5 shrink-0">
@@ -409,6 +409,15 @@
                 <option value="Afternoon">Afternoon</option>
                 <option value="Evening">Evening</option>
                 <option value="Anytime">Anytime</option>
+              </select>
+            </label>
+
+            <label class="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl">
+              <span class="text-slate-400">Mode:</span>
+              <select id="select-task-mode" class="bg-transparent font-semibold text-indigo-600 dark:text-indigo-400 focus:outline-none">
+                <option value="focus" selected>Focus</option>
+                <option value="short">Short Break</option>
+                <option value="long">Long Break</option>
               </select>
             </label>
 
@@ -524,7 +533,7 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v9';
+    const STORAGE_KEY = 'chronosflow_persistent_v10';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
@@ -591,17 +600,18 @@
       const hh = String(shifted.getUTCHours()).padStart(2, '0');
       const mm = String(shifted.getUTCMinutes()).padStart(2, '0');
       const ss = String(shifted.getUTCSeconds()).padStart(2, '0');
+      const timeStr = `${hh}:${mm}:${ss}`;
 
       const clockEl = document.getElementById('live-gmt-clock');
       if (clockEl) {
-        clockEl.textContent = `${hh}:${mm}:${ss}`;
+        clockEl.textContent = timeStr;
       }
 
       const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const headerDateEl = document.getElementById('header-date-display');
       if (headerDateEl) {
-        headerDateEl.textContent = `${weekdays[shifted.getUTCDay()]}, ${months[shifted.getUTCMonth()]} ${shifted.getUTCDate()} • ${formatGmtOffsetLabel(gmtOffset)}`;
+        headerDateEl.textContent = `${weekdays[shifted.getUTCDay()]}, ${months[shifted.getUTCMonth()]} ${shifted.getUTCDate()} • ${timeStr} ${formatGmtOffsetLabel(gmtOffset)}`;
       }
     }
 
@@ -616,7 +626,11 @@
           longMin: 15,
           dailyGoalMin: 120,
         },
-        activeTaskId: null,
+        activeTaskIdsByMode: {
+          focus: null,
+          short: null,
+          long: null,
+        },
         filter: 'all',
         dailyHistory: {},
         tasks: [],
@@ -629,6 +643,12 @@
         if (!raw) return createEmptyState();
         const parsed = JSON.parse(raw);
         const base = createEmptyState();
+        const normalizedTasks = Array.isArray(parsed.tasks)
+          ? parsed.tasks.map(t => ({
+              ...t,
+              sessionMode: ['focus', 'short', 'long'].includes(t.sessionMode) ? t.sessionMode : 'focus',
+            }))
+          : [];
         return {
           ...base,
           ...parsed,
@@ -636,8 +656,12 @@
             ? parsed.gmtOffsetMinutes
             : base.gmtOffsetMinutes,
           settings: { ...base.settings, ...(parsed.settings || {}) },
+          activeTaskIdsByMode: {
+            ...base.activeTaskIdsByMode,
+            ...(parsed.activeTaskIdsByMode || {}),
+          },
           dailyHistory: parsed.dailyHistory || {},
-          tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+          tasks: normalizedTasks,
         };
       } catch (err) {
         return createEmptyState();
@@ -665,6 +689,16 @@
       return appState.dailyHistory[dateKey];
     }
 
+    function getTaskMode(task) {
+      return ['focus', 'short', 'long'].includes(task.sessionMode) ? task.sessionMode : 'focus';
+    }
+
+    function getModeDisplayLabel(mode) {
+      if (mode === 'short') return 'Short Break';
+      if (mode === 'long') return 'Long Break';
+      return 'Focus';
+    }
+
     function getTotalSessions(task) {
       return Math.max(1, parseInt(task.estSessions, 10) || 1);
     }
@@ -679,6 +713,18 @@
     function getRemainingSessions(task) {
       if (task.completed) return 0;
       return Math.max(0, getTotalSessions(task) - getCompletedSessions(task));
+    }
+
+    function resolveActiveTaskForMode(mode) {
+      const savedId = appState.activeTaskIdsByMode?.[mode] || null;
+      let task = appState.tasks.find(t => t.id === savedId && !t.completed && getTaskMode(t) === mode);
+      if (!task) {
+        task = appState.tasks.find(t => !t.completed && getTaskMode(t) === mode) || null;
+        if (appState.activeTaskIdsByMode) {
+          appState.activeTaskIdsByMode[mode] = task ? task.id : null;
+        }
+      }
+      return task;
     }
 
     function calculateStreak() {
@@ -874,10 +920,14 @@
       return `${m}:${s}`;
     }
 
+    function getModeDurationMinutes(mode) {
+      if (mode === 'focus') return appState.settings.focusMin;
+      if (mode === 'short') return appState.settings.shortMin;
+      return appState.settings.longMin;
+    }
+
     function getModeDurationSeconds(mode) {
-      if (mode === 'focus') return appState.settings.focusMin * 60;
-      if (mode === 'short') return appState.settings.shortMin * 60;
-      return appState.settings.longMin * 60;
+      return getModeDurationMinutes(mode) * 60;
     }
 
     function switchTimerMode(mode) {
@@ -885,6 +935,8 @@
       runtime.mode = mode;
       runtime.totalSeconds = getModeDurationSeconds(mode);
       runtime.remainingSeconds = runtime.totalSeconds;
+      resolveActiveTaskForMode(mode);
+      renderTasks();
       updateTimerUI();
     }
 
@@ -937,82 +989,89 @@
       pauseTimer();
       AudioEngine.playCompletionChime();
 
-      if (runtime.mode === 'focus') {
-        const loggedMin = appState.settings.focusMin;
-        const nowIso = new Date().toISOString();
-        const gmtOffset = getActiveGmtOffset();
-        const today = getDateKeyInGmt(0, gmtOffset);
-        const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
-        const dayRecord = ensureDayRecord(today);
+      const completedMode = runtime.mode;
+      const modeLabel = getModeDisplayLabel(completedMode);
+      const loggedMin = getModeDurationMinutes(completedMode);
+      const nowIso = new Date().toISOString();
+      const gmtOffset = getActiveGmtOffset();
+      const today = getDateKeyInGmt(0, gmtOffset);
+      const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
+      const dayRecord = ensureDayRecord(today);
 
+      // Focus minutes count toward daily focus KPI & streak
+      if (completedMode === 'focus') {
         dayRecord.minutes += loggedMin;
         dayRecord.sessions += 1;
+      }
 
-        let linkedTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
-        if (!linkedTask) {
-          linkedTask = appState.tasks.find(t => !t.completed) || null;
-          if (linkedTask) appState.activeTaskId = linkedTask.id;
-        }
+      // Match active task tagged with the completed timer mode (Focus / Short Break / Long Break)
+      const linkedTask = resolveActiveTaskForMode(completedMode);
 
-        if (linkedTask) {
-          const totalSessions = getTotalSessions(linkedTask);
-          const nextDoneSessions = Math.min(totalSessions, getCompletedSessions(linkedTask) + 1);
-          linkedTask.estSessions = totalSessions;
-          linkedTask.completedSessions = nextDoneSessions;
+      if (linkedTask) {
+        const totalSessions = getTotalSessions(linkedTask);
+        const nextDoneSessions = Math.min(totalSessions, getCompletedSessions(linkedTask) + 1);
+        linkedTask.estSessions = totalSessions;
+        linkedTask.completedSessions = nextDoneSessions;
 
-          const sessionsLeft = Math.max(0, totalSessions - nextDoneSessions);
-          const isNowFinished = sessionsLeft === 0;
+        const sessionsLeft = Math.max(0, totalSessions - nextDoneSessions);
+        const isNowFinished = sessionsLeft === 0;
 
-          if (isNowFinished) {
-            linkedTask.completed = true;
-            linkedTask.completedDate = today;
-            linkedTask.completedAtIso = nowIso;
-          } else {
-            linkedTask.completed = false;
-            linkedTask.completedDate = null;
-            linkedTask.completedAtIso = null;
-          }
-
-          dayRecord.entries.unshift({
-            taskId: linkedTask.id,
-            title: `${linkedTask.title} (${nextDoneSessions}/${totalSessions})`,
-            priority: linkedTask.priority,
-            block: linkedTask.block,
-            minutes: loggedMin,
-            status: isNowFinished ? 'completed' : 'session_logged',
-            timestamp: completedStamp,
-          });
-
-          if (isNowFinished) {
-            const nextTask = appState.tasks.find(t => !t.completed && t.id !== linkedTask.id);
-            appState.activeTaskId = nextTask ? nextTask.id : null;
-            showToast(`Sesi ${nextDoneSessions}/${totalSessions} beres! Task otomatis tercentang (${completedStamp})`);
-          } else {
-            showToast(`Sesi ${nextDoneSessions}/${totalSessions} selesai! Sisa ${sessionsLeft} sesi lagi.`);
-          }
+        if (isNowFinished) {
+          linkedTask.completed = true;
+          linkedTask.completedDate = today;
+          linkedTask.completedAtIso = nowIso;
         } else {
-          dayRecord.entries.unshift({
-            taskId: null,
-            title: 'Unlinked Deep Focus Session',
-            priority: 'medium',
-            block: 'Anytime',
-            minutes: loggedMin,
-            status: 'session_logged',
-            timestamp: completedStamp,
-          });
-          showToast(`Focus session complete! +${loggedMin}m (${completedStamp})`);
+          linkedTask.completed = false;
+          linkedTask.completedDate = null;
+          linkedTask.completedAtIso = null;
         }
 
-        saveState();
-        renderKPIs();
-        renderWeeklyChart();
-        renderTasks();
-        updateTimerUI();
+        dayRecord.entries.unshift({
+          taskId: linkedTask.id,
+          title: `[${modeLabel}] ${linkedTask.title} (${nextDoneSessions}/${totalSessions})`,
+          priority: linkedTask.priority,
+          block: linkedTask.block,
+          sessionMode: completedMode,
+          minutes: loggedMin,
+          status: isNowFinished ? 'completed' : 'session_logged',
+          timestamp: completedStamp,
+        });
 
+        if (isNowFinished) {
+          const nextTask = appState.tasks.find(
+            t => !t.completed && t.id !== linkedTask.id && getTaskMode(t) === completedMode
+          );
+          appState.activeTaskIdsByMode[completedMode] = nextTask ? nextTask.id : null;
+          showToast(`[${modeLabel}] Sesi ${nextDoneSessions}/${totalSessions} beres! Task otomatis tercentang.`);
+        } else {
+          showToast(`[${modeLabel}] Sesi ${nextDoneSessions}/${totalSessions} selesai! Sisa ${sessionsLeft} sesi lagi.`);
+        }
+      } else if (completedMode === 'focus') {
+        dayRecord.entries.unshift({
+          taskId: null,
+          title: 'Unlinked Deep Focus Session',
+          priority: 'medium',
+          block: 'Anytime',
+          sessionMode: 'focus',
+          minutes: loggedMin,
+          status: 'session_logged',
+          timestamp: completedStamp,
+        });
+        showToast(`Focus session complete! +${loggedMin}m (${completedStamp})`);
+      } else {
+        showToast(`${modeLabel} finished! Ready for your next block.`);
+      }
+
+      saveState();
+      renderKPIs();
+      renderWeeklyChart();
+      renderTasks();
+      updateTimerUI();
+
+      if (completedMode === 'focus') {
         const cycleLong = dayRecord.sessions % 4 === 0;
         switchTimerMode(cycleLong ? 'long' : 'short');
       } else {
-        showToast('Break finished! Ready for your next focus block.');
         switchTimerMode('focus');
       }
     }
@@ -1027,17 +1086,25 @@
       const offset = RING_CIRCUMFERENCE * (1 - ratio);
       ring.style.strokeDashoffset = offset;
 
-      const modeLabel = document.getElementById('timer-mode-label');
+      const modeLabelEl = document.getElementById('timer-mode-label');
       const statusDot = document.getElementById('timer-status-dot');
+      const activeModeBadge = document.getElementById('active-task-mode-badge');
+
       if (runtime.mode === 'focus') {
         ring.setAttribute('class', 'progress-ring__circle stroke-indigo-600 dark:stroke-indigo-500');
-        modeLabel.textContent = 'Deep Focus';
+        modeLabelEl.textContent = 'Deep Focus';
+        activeModeBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400';
+        activeModeBadge.textContent = 'Working On (Focus)';
       } else if (runtime.mode === 'short') {
         ring.setAttribute('class', 'progress-ring__circle stroke-emerald-500');
-        modeLabel.textContent = 'Short Break';
+        modeLabelEl.textContent = 'Short Break';
+        activeModeBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400';
+        activeModeBadge.textContent = 'Active Task (Short Break)';
       } else {
         ring.setAttribute('class', 'progress-ring__circle stroke-sky-500');
-        modeLabel.textContent = 'Long Break';
+        modeLabelEl.textContent = 'Long Break';
+        activeModeBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400';
+        activeModeBadge.textContent = 'Active Task (Long Break)';
       }
 
       if (runtime.isRunning) {
@@ -1059,10 +1126,12 @@
           : 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
       });
 
-      const activeTask = appState.tasks.find(t => t.id === appState.activeTaskId && !t.completed);
+      const activeTask = resolveActiveTaskForMode(runtime.mode);
       const taskTitleEl = document.getElementById('active-task-title');
       const sessionsLeftEl = document.getElementById('active-task-sessions-left');
       const unlinkBtn = document.getElementById('btn-unlink-task');
+      const currentModeLabel = getModeDisplayLabel(runtime.mode);
+
       if (activeTask) {
         const total = getTotalSessions(activeTask);
         const done = getCompletedSessions(activeTask);
@@ -1071,7 +1140,7 @@
         sessionsLeftEl.textContent = `${left} left (${done}/${total})`;
         unlinkBtn.classList.remove('hidden');
       } else {
-        taskTitleEl.textContent = 'Select a task from your queue →';
+        taskTitleEl.textContent = `No "${currentModeLabel}" task selected — pick or add one →`;
         sessionsLeftEl.textContent = '';
         unlinkBtn.classList.add('hidden');
       }
@@ -1081,14 +1150,16 @@
     // PRIORITY TASK MANAGER
     // =========================================================================
 
-    function addTask(title, priority, block, estSessions) {
+    function addTask(title, priority, block, sessionMode, estSessions) {
       const parsedEst = Math.max(1, parseInt(estSessions, 10) || 1);
+      const normalizedMode = ['focus', 'short', 'long'].includes(sessionMode) ? sessionMode : 'focus';
       const gmtOffset = getActiveGmtOffset();
       const newTask = {
         id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         title: title.trim(),
         priority,
         block,
+        sessionMode: normalizedMode,
         estSessions: parsedEst,
         completedSessions: 0,
         completed: false,
@@ -1097,14 +1168,16 @@
         createdAt: getDateKeyInGmt(0, gmtOffset),
       };
       appState.tasks.unshift(newTask);
-      if (!appState.activeTaskId) {
-        appState.activeTaskId = newTask.id;
+
+      if (!appState.activeTaskIdsByMode[normalizedMode]) {
+        appState.activeTaskIdsByMode[normalizedMode] = newTask.id;
       }
+
       saveState();
       renderTasks();
       renderKPIs();
       updateTimerUI();
-      showToast(`Task ditambahkan (${parsedEst} sesi)`);
+      showToast(`Task [${getModeDisplayLabel(normalizedMode)}] ditambahkan (${parsedEst} sesi)`);
     }
 
     function toggleTaskComplete(id) {
@@ -1117,6 +1190,8 @@
       const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
       const dayRecord = ensureDayRecord(today);
       const totalSessions = getTotalSessions(task);
+      const taskMode = getTaskMode(task);
+      const modeLabel = getModeDisplayLabel(taskMode);
 
       task.completed = !task.completed;
 
@@ -1134,29 +1209,33 @@
             .filter(e => e.taskId === task.id)
             .reduce((sum, e) => sum + e.minutes, 0);
 
-          const creditMinutes = existingTaskMinsToday > 0 ? 0 : appState.settings.focusMin;
-          if (creditMinutes > 0) {
+          const defaultModeMin = getModeDurationMinutes(taskMode);
+          const creditMinutes = existingTaskMinsToday > 0 ? 0 : defaultModeMin;
+          if (creditMinutes > 0 && taskMode === 'focus') {
             dayRecord.minutes += creditMinutes;
             dayRecord.sessions += 1;
           }
 
           dayRecord.entries.unshift({
             taskId: task.id,
-            title: `${task.title} (${totalSessions}/${totalSessions})`,
+            title: `[${modeLabel}] ${task.title} (${totalSessions}/${totalSessions})`,
             priority: task.priority,
             block: task.block,
+            sessionMode: taskMode,
             minutes: creditMinutes > 0 ? creditMinutes : existingTaskMinsToday,
             status: 'completed',
             timestamp: completedStamp,
           });
         }
 
-        if (appState.activeTaskId === task.id) {
-          const nextActive = appState.tasks.find(t => !t.completed && t.id !== task.id);
-          appState.activeTaskId = nextActive ? nextActive.id : null;
+        if (appState.activeTaskIdsByMode[taskMode] === task.id) {
+          const nextActive = appState.tasks.find(
+            t => !t.completed && t.id !== task.id && getTaskMode(t) === taskMode
+          );
+          appState.activeTaskIdsByMode[taskMode] = nextActive ? nextActive.id : null;
         }
 
-        showToast(`Selesai (${completedStamp}) & masuk Weekly Focus!`);
+        showToast(`Selesai (${completedStamp}) & masuk log harian!`);
       } else {
         task.completedSessions = Math.max(0, totalSessions - 1);
         const prevDate = task.completedDate || today;
@@ -1170,7 +1249,7 @@
             const hasOtherLogs = targetDay.entries.some(
               (e, idx) => idx !== compIdx && e.taskId === task.id
             );
-            if (!hasOtherLogs && removed.minutes > 0) {
+            if (!hasOtherLogs && removed.minutes > 0 && taskMode === 'focus') {
               targetDay.minutes = Math.max(0, targetDay.minutes - removed.minutes);
               targetDay.sessions = Math.max(0, targetDay.sessions - 1);
             }
@@ -1179,7 +1258,7 @@
         }
         task.completedDate = null;
         task.completedAtIso = null;
-        appState.activeTaskId = task.id;
+        appState.activeTaskIdsByMode[taskMode] = task.id;
       }
 
       saveState();
@@ -1196,13 +1275,14 @@
       if (updated && updated.trim()) {
         const total = getTotalSessions(task);
         const done = getCompletedSessions(task);
+        const modeLabel = getModeDisplayLabel(getTaskMode(task));
         task.title = updated.trim();
         Object.values(appState.dailyHistory).forEach(day => {
           day.entries.forEach(entry => {
             if (entry.taskId === id) {
               entry.title = entry.status === 'completed'
-                ? `${task.title} (${total}/${total})`
-                : `${task.title} (${done}/${total})`;
+                ? `[${modeLabel}] ${task.title} (${total}/${total})`
+                : `[${modeLabel}] ${task.title} (${done}/${total})`;
             }
           });
         });
@@ -1214,10 +1294,12 @@
     }
 
     function deleteTask(id) {
+      const task = appState.tasks.find(t => t.id === id);
+      const taskMode = task ? getTaskMode(task) : null;
       appState.tasks = appState.tasks.filter(t => t.id !== id);
-      if (appState.activeTaskId === id) {
-        const nextActive = appState.tasks.find(t => !t.completed);
-        appState.activeTaskId = nextActive ? nextActive.id : null;
+      if (taskMode && appState.activeTaskIdsByMode[taskMode] === id) {
+        const nextActive = appState.tasks.find(t => !t.completed && getTaskMode(t) === taskMode);
+        appState.activeTaskIdsByMode[taskMode] = nextActive ? nextActive.id : null;
       }
       saveState();
       renderTasks();
@@ -1229,11 +1311,17 @@
     function selectActiveTask(id) {
       const task = appState.tasks.find(t => t.id === id);
       if (!task || task.completed) return;
-      appState.activeTaskId = id;
+      const taskMode = getTaskMode(task);
+      appState.activeTaskIdsByMode[taskMode] = id;
       saveState();
-      renderTasks();
-      updateTimerUI();
-      showToast(`"${task.title}" terhubung ke timer`);
+
+      if (runtime.mode !== taskMode) {
+        switchTimerMode(taskMode);
+      } else {
+        renderTasks();
+        updateTimerUI();
+      }
+      showToast(`"${task.title}" terhubung ke timer ${getModeDisplayLabel(taskMode)}`);
     }
 
     function getPriorityBadgeHTML(priority) {
@@ -1244,6 +1332,16 @@
         return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200/70 dark:border-amber-800/70">Medium</span>';
       }
       return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200/70 dark:border-sky-800/70">Low</span>';
+    }
+
+    function getSessionModeBadgeHTML(mode) {
+      if (mode === 'short') {
+        return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200/70 dark:border-emerald-800/70">Short Break</span>';
+      }
+      if (mode === 'long') {
+        return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200/70 dark:border-sky-800/70">Long Break</span>';
+      }
+      return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/70 dark:border-indigo-800/70">Focus</span>';
     }
 
     function renderTasks() {
@@ -1275,12 +1373,14 @@
         container.innerHTML = `
           <div class="py-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks in this view</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a priority task above to track focus sessions.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Add a Focus, Short Break, or Long Break task above.</p>
           </div>
         `;
       } else {
         filtered.forEach(task => {
-          const isLinked = task.id === appState.activeTaskId && !task.completed;
+          const taskMode = getTaskMode(task);
+          const isLinked = !task.completed && appState.activeTaskIdsByMode[taskMode] === task.id;
+          const isCurrentlyRunningMode = isLinked && runtime.mode === taskMode;
           const totalSessions = getTotalSessions(task);
           const doneSessions = getCompletedSessions(task);
           const sessionsLeft = getRemainingSessions(task);
@@ -1297,8 +1397,10 @@
           card.className = `group p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
             task.completed ? 'cursor-default opacity-85' : 'cursor-pointer'
           } ${
-            isLinked
+            isCurrentlyRunningMode
               ? 'bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-400 dark:border-indigo-500/70'
+              : isLinked
+              ? 'bg-slate-50/90 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700'
               : 'bg-white dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
           }`;
 
@@ -1319,12 +1421,19 @@
                   ${escapeHTML(task.title)}
                 </div>
                 <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                  ${getSessionModeBadgeHTML(taskMode)}
                   ${getPriorityBadgeHTML(task.priority)}
                   <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     ${escapeHTML(task.block)}
                   </span>
-                  ${isLinked ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active in Timer</span>' : ''}
+                  ${
+                    isCurrentlyRunningMode
+                      ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active in Timer</span>'
+                      : isLinked
+                      ? `<span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">• Queued for ${getModeDisplayLabel(taskMode)}</span>`
+                      : ''
+                  }
                   ${
                     task.completed && doneStampText
                       ? `<span class="text-[10px] font-mono font-semibold text-emerald-600 dark:text-emerald-400">✓ ${escapeHTML(doneStampText)}</span>`
@@ -1371,7 +1480,9 @@
       const remainingSessions = appState.tasks
         .filter(t => !t.completed)
         .reduce((acc, t) => acc + getRemainingSessions(t), 0);
-      const estMinutes = remainingSessions * appState.settings.focusMin;
+      const estMinutes = appState.tasks
+        .filter(t => !t.completed)
+        .reduce((acc, t) => acc + getRemainingSessions(t) * getModeDurationMinutes(getTaskMode(t)), 0);
       document.getElementById('footer-pomodoro-summary').textContent =
         `Remaining workload: ${remainingSessions} sessions (~${estMinutes}m)`;
     }
@@ -1427,7 +1538,7 @@
 
       document.getElementById('day-detail-title').textContent = formattedDate;
       document.getElementById('day-detail-subtitle').textContent =
-        `${dayRecord.minutes}m logged • ${dayRecord.sessions} session${dayRecord.sessions === 1 ? '' : 's'} • ${dayRecord.entries.length} activity item${dayRecord.entries.length === 1 ? '' : 's'}`;
+        `${dayRecord.minutes}m focus logged • ${dayRecord.sessions} focus session${dayRecord.sessions === 1 ? '' : 's'} • ${dayRecord.entries.length} activity item${dayRecord.entries.length === 1 ? '' : 's'}`;
 
       const listEl = document.getElementById('day-detail-list');
       listEl.innerHTML = '';
@@ -1436,7 +1547,7 @@
         listEl.innerHTML = `
           <div class="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No tasks completed or logged on this day</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Complete a priority task or finish a focus session to record it here.</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Complete a priority task or finish a session to record it here.</p>
           </div>
         `;
       } else {
@@ -1460,11 +1571,12 @@
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(entry.title)}</p>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
+                  ${getSessionModeBadgeHTML(entry.sessionMode || 'focus')}
                   ${getPriorityBadgeHTML(entry.priority)}
                   <span class="text-[11px] font-medium ${
                     isCompletedStatus ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'
                   }">
-                    ${isCompletedStatus ? 'Task Completed' : 'Focus Session'}
+                    ${isCompletedStatus ? 'Task Completed' : 'Session Logged'}
                   </span>
                   <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">• ${escapeHTML(entry.timestamp || '')}</span>
                 </div>
@@ -1644,7 +1756,7 @@
     document.getElementById('btn-timer-skip').addEventListener('click', completeCurrentSession);
 
     document.getElementById('btn-unlink-task').addEventListener('click', () => {
-      appState.activeTaskId = null;
+      appState.activeTaskIdsByMode[runtime.mode] = null;
       saveState();
       renderTasks();
       updateTimerUI();
@@ -1666,6 +1778,7 @@
         input.value,
         document.getElementById('select-task-priority').value,
         document.getElementById('select-task-block').value,
+        document.getElementById('select-task-mode').value,
         document.getElementById('input-task-est').value
       );
       input.value = '';
