@@ -338,7 +338,7 @@
       <!-- RIGHT COLUMN (7 cols): PRIORITY TASK & TIME-BLOCKING MANAGER -->
       <section class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
 
-        <!-- Header, Simple Timezone Dropdown & Filters -->
+        <!-- Header, GMT Offset Selector & Filters -->
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
@@ -348,10 +348,10 @@
           <div class="flex items-center gap-2">
             <select
               id="select-user-timezone"
-              aria-label="Timezone"
-              class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-[180px] sm:max-w-[220px] truncate"
+              aria-label="GMT Offset"
+              class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <!-- All global IANA timezones -->
+              <!-- Populated with GMT-12 to GMT+14 -->
             </select>
 
             <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
@@ -511,102 +511,75 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v6';
+    const STORAGE_KEY = 'chronosflow_persistent_v7';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
-    const ALL_WORLD_TIMEZONES = (() => {
-      let zones = [];
-      try {
-        if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
-          zones = Intl.supportedValuesOf('timeZone');
+    // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
+    const GMT_OFFSETS = (() => {
+      const list = [];
+      for (let mins = -720; mins <= 840; mins += 30) {
+        // Include standard 30-min and key 45-min offsets (e.g. +5:45 Nepal, +12:45 Chatham)
+        if (Math.abs(mins) % 60 === 30 || mins === 345 || mins === 765) {
+          const sign = mins >= 0 ? '+' : '-';
+          const abs = Math.abs(mins);
+          const h = Math.floor(abs / 60);
+          const m = abs % 60;
+          const label = m === 0 ? `GMT${sign}${h}` : `GMT${sign}${h}:${String(m).padStart(2, '0')}`;
+          list.push({ minutes: mins, label });
         }
-      } catch (e) {}
-
-      if (!zones || zones.length === 0) {
-        zones = [
-          'UTC', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Lagos', 'Africa/Nairobi',
-          'America/Anchorage', 'America/Argentina/Buenos_Aires', 'America/Bogota', 'America/Chicago',
-          'America/Denver', 'America/Los_Angeles', 'America/Mexico_City', 'America/New_York',
-          'America/Santiago', 'America/Sao_Paulo', 'America/Toronto', 'America/Vancouver',
-          'Asia/Bangkok', 'Asia/Colombo', 'Asia/Dhaka', 'Asia/Dubai', 'Asia/Hong_Kong',
-          'Asia/Jakarta', 'Asia/Jayapura', 'Asia/Jerusalem', 'Asia/Karachi', 'Asia/Kathmandu',
-          'Asia/Kolkata', 'Asia/Kuala_Lumpur', 'Asia/Makassar', 'Asia/Manila', 'Asia/Riyadh',
-          'Asia/Seoul', 'Asia/Shanghai', 'Asia/Singapore', 'Asia/Taipei', 'Asia/Tehran',
-          'Asia/Tokyo', 'Atlantic/Reykjavik', 'Australia/Adelaide', 'Australia/Brisbane',
-          'Australia/Melbourne', 'Australia/Perth', 'Australia/Sydney', 'Europe/Amsterdam',
-          'Europe/Athens', 'Europe/Berlin', 'Europe/Brussels', 'Europe/Dublin', 'Europe/Helsinki',
-          'Europe/Istanbul', 'Europe/Lisbon', 'Europe/London', 'Europe/Madrid', 'Europe/Moscow',
-          'Europe/Oslo', 'Europe/Paris', 'Europe/Prague', 'Europe/Rome', 'Europe/Stockholm',
-          'Europe/Vienna', 'Europe/Warsaw', 'Europe/Zurich', 'Pacific/Auckland', 'Pacific/Fiji',
-          'Pacific/Honolulu'
-        ];
       }
-      return zones;
+      return list;
     })();
 
-    function detectDeviceTimezone() {
-      try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
-      } catch (e) {
-        return 'Asia/Jakarta';
-      }
+    function formatGmtOffsetLabel(offsetMinutes) {
+      const sign = offsetMinutes >= 0 ? '+' : '-';
+      const abs = Math.abs(offsetMinutes);
+      const h = Math.floor(abs / 60);
+      const m = abs % 60;
+      return m === 0 ? `GMT${sign}${h}` : `GMT${sign}${h}:${String(m).padStart(2, '0')}`;
     }
 
-    function getActiveTimezone() {
-      return appState.timezone || detectDeviceTimezone();
+    function detectLocalGmtOffsetMinutes() {
+      // JS getTimezoneOffset() returns minutes behind UTC (e.g. -420 for GMT+7)
+      return -new Date().getTimezoneOffset();
     }
 
-    function formatTimezoneLabel(tz) {
-      const parts = tz.split('/');
-      if (parts.length > 1) {
-        return `${parts[0].replace(/_/g, ' ')} / ${parts.slice(1).join('/').replace(/_/g, ' ')}`;
-      }
-      return tz;
+    function getActiveGmtOffset() {
+      return typeof appState.gmtOffsetMinutes === 'number'
+        ? appState.gmtOffsetMinutes
+        : detectLocalGmtOffsetMinutes();
     }
 
-    function getDateKeyInTimezone(offsetDays = 0, tz = getActiveTimezone()) {
-      const baseDate = new Date(Date.now() + offsetDays * 86400000);
-      try {
-        const parts = new Intl.DateTimeFormat('en-CA', {
-          timeZone: tz,
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        }).formatToParts(baseDate);
-        const y = parts.find(p => p.type === 'year')?.value;
-        const m = parts.find(p => p.type === 'month')?.value;
-        const d = parts.find(p => p.type === 'day')?.value;
-        if (y && m && d) return `${y}-${m}-${d}`;
-      } catch (e) {}
-      const year = baseDate.getFullYear();
-      const month = String(baseDate.getMonth() + 1).padStart(2, '0');
-      const day = String(baseDate.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+    // Shift real UTC epoch by selected GMT offset and format via UTC methods
+    function getShiftedDate(dateObj = new Date(), offsetMinutes = getActiveGmtOffset()) {
+      return new Date(dateObj.getTime() + offsetMinutes * 60000);
     }
 
-    function formatCompletionTimestamp(isoString = new Date().toISOString(), tz = getActiveTimezone()) {
-      const dateObj = new Date(isoString);
-      try {
-        return new Intl.DateTimeFormat('en-GB', {
-          timeZone: tz,
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZoneName: 'short',
-        }).format(dateObj);
-      } catch (e) {
-        return dateObj.toLocaleString();
-      }
+    function getDateKeyInGmt(offsetDays = 0, offsetMinutes = getActiveGmtOffset()) {
+      const shifted = getShiftedDate(new Date(Date.now() + offsetDays * 86400000), offsetMinutes);
+      const y = shifted.getUTCFullYear();
+      const m = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(shifted.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatCompletionTimestamp(isoString = new Date().toISOString(), offsetMinutes = getActiveGmtOffset()) {
+      const shifted = getShiftedDate(new Date(isoString), offsetMinutes);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const d = String(shifted.getUTCDate()).padStart(2, '0');
+      const m = months[shifted.getUTCMonth()];
+      const y = shifted.getUTCFullYear();
+      const hh = String(shifted.getUTCHours()).padStart(2, '0');
+      const mm = String(shifted.getUTCMinutes()).padStart(2, '0');
+      const gmtLabel = formatGmtOffsetLabel(offsetMinutes);
+      return `${d} ${m} ${y}, ${hh}:${mm} ${gmtLabel}`;
     }
 
     function createEmptyState() {
       return {
         theme: 'light',
         muted: false,
-        timezone: detectDeviceTimezone(),
+        gmtOffsetMinutes: detectLocalGmtOffsetMinutes(),
         settings: {
           focusMin: 25,
           shortMin: 5,
@@ -629,7 +602,9 @@
         return {
           ...base,
           ...parsed,
-          timezone: parsed.timezone || base.timezone,
+          gmtOffsetMinutes: typeof parsed.gmtOffsetMinutes === 'number'
+            ? parsed.gmtOffsetMinutes
+            : base.gmtOffsetMinutes,
           settings: { ...base.settings, ...(parsed.settings || {}) },
           dailyHistory: parsed.dailyHistory || {},
           tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
@@ -666,12 +641,12 @@
 
     function calculateStreak() {
       let streak = 0;
-      const todayKey = getDateKeyInTimezone(0);
+      const todayKey = getDateKeyInGmt(0);
       const todayHasActivity = (appState.dailyHistory[todayKey]?.minutes || 0) > 0;
       let offset = todayHasActivity ? 0 : -1;
 
       while (true) {
-        const key = getDateKeyInTimezone(offset);
+        const key = getDateKeyInGmt(offset);
         const dayData = appState.dailyHistory[key];
         if (dayData && dayData.minutes > 0) {
           streak++;
@@ -694,38 +669,26 @@
       selectedDetailDate: null,
     };
 
-    function initTimezoneDropdown() {
+    function initGmtDropdown() {
       const selectEl = document.getElementById('select-user-timezone');
-      const currentTz = getActiveTimezone();
+      const currentOffset = getActiveGmtOffset();
       selectEl.innerHTML = '';
 
-      const groups = new Map();
-      ALL_WORLD_TIMEZONES.forEach(tz => {
-        const slashIdx = tz.indexOf('/');
-        const groupName = slashIdx > 0 ? tz.slice(0, slashIdx) : 'Other';
-        if (!groups.has(groupName)) groups.set(groupName, []);
-        groups.get(groupName).push(tz);
+      GMT_OFFSETS.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = String(item.minutes);
+        opt.textContent = item.label;
+        selectEl.appendChild(opt);
       });
 
-      groups.forEach((zones, groupName) => {
-        const optGroup = document.createElement('optgroup');
-        optGroup.label = groupName.replace(/_/g, ' ');
-        zones.forEach(tz => {
-          const opt = document.createElement('option');
-          opt.value = tz;
-          opt.textContent = formatTimezoneLabel(tz);
-          optGroup.appendChild(opt);
-        });
-        selectEl.appendChild(optGroup);
-      });
-
-      if (!Array.from(selectEl.options).some(o => o.value === currentTz)) {
-        const extra = document.createElement('option');
-        extra.value = currentTz;
-        extra.textContent = formatTimezoneLabel(currentTz);
-        selectEl.prepend(extra);
+      if (!Array.from(selectEl.options).some(o => Number(o.value) === currentOffset)) {
+        const customOpt = document.createElement('option');
+        customOpt.value = String(currentOffset);
+        customOpt.textContent = formatGmtOffsetLabel(currentOffset);
+        selectEl.prepend(customOpt);
       }
-      selectEl.value = currentTz;
+
+      selectEl.value = String(currentOffset);
     }
 
     // =========================================================================
@@ -921,9 +884,9 @@
       if (runtime.mode === 'focus') {
         const loggedMin = appState.settings.focusMin;
         const nowIso = new Date().toISOString();
-        const tz = getActiveTimezone();
-        const today = getDateKeyInTimezone(0, tz);
-        const completedStamp = formatCompletionTimestamp(nowIso, tz);
+        const gmtOffset = getActiveGmtOffset();
+        const today = getDateKeyInGmt(0, gmtOffset);
+        const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
         const dayRecord = ensureDayRecord(today);
 
         dayRecord.minutes += loggedMin;
@@ -1058,7 +1021,7 @@
 
     function addTask(title, priority, block, estSessions) {
       const parsedEst = Math.max(1, parseInt(estSessions, 10) || 1);
-      const tz = getActiveTimezone();
+      const gmtOffset = getActiveGmtOffset();
       const newTask = {
         id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         title: title.trim(),
@@ -1069,7 +1032,7 @@
         completed: false,
         completedDate: null,
         completedAtIso: null,
-        createdAt: getDateKeyInTimezone(0, tz),
+        createdAt: getDateKeyInGmt(0, gmtOffset),
       };
       appState.tasks.unshift(newTask);
       if (!appState.activeTaskId) {
@@ -1087,9 +1050,9 @@
       if (!task) return;
 
       const nowIso = new Date().toISOString();
-      const tz = getActiveTimezone();
-      const today = getDateKeyInTimezone(0, tz);
-      const completedStamp = formatCompletionTimestamp(nowIso, tz);
+      const gmtOffset = getActiveGmtOffset();
+      const today = getDateKeyInGmt(0, gmtOffset);
+      const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
       const dayRecord = ensureDayRecord(today);
 
       task.completed = !task.completed;
@@ -1218,7 +1181,7 @@
       const container = document.getElementById('task-list-container');
       container.innerHTML = '';
 
-      const activeTz = getActiveTimezone();
+      const gmtOffset = getActiveGmtOffset();
 
       document.querySelectorAll('.filter-btn').forEach(btn => {
         const isCurrent = btn.dataset.filter === appState.filter;
@@ -1255,7 +1218,7 @@
             : `${sessionsLeft} left (${task.completedSessions}/${task.estSessions})`;
 
           const doneStampText = task.completed && task.completedAtIso
-            ? formatCompletionTimestamp(task.completedAtIso, activeTz)
+            ? formatCompletionTimestamp(task.completedAtIso, gmtOffset)
             : (task.completedDate || '');
 
           const card = document.createElement('div');
@@ -1352,8 +1315,8 @@
     // =========================================================================
 
     function renderKPIs() {
-      const tz = getActiveTimezone();
-      const todayData = appState.dailyHistory[getDateKeyInTimezone(0, tz)] || { minutes: 0, sessions: 0 };
+      const gmtOffset = getActiveGmtOffset();
+      const todayData = appState.dailyHistory[getDateKeyInGmt(0, gmtOffset)] || { minutes: 0, sessions: 0 };
       const todayMin = todayData.minutes;
       const goalMin = appState.settings.dailyGoalMin;
       const pct = Math.min(100, Math.round((todayMin / goalMin) * 100));
@@ -1457,14 +1420,14 @@
       const container = document.getElementById('weekly-chart-container');
       container.innerHTML = '';
 
-      const tz = getActiveTimezone();
+      const gmtOffset = getActiveGmtOffset();
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const days = [];
       let totalWeekMinutes = 0;
       let maxVal = Math.max(60, appState.settings.dailyGoalMin);
 
       for (let i = 6; i >= 0; i--) {
-        const key = getDateKeyInTimezone(-i, tz);
+        const key = getDateKeyInGmt(-i, gmtOffset);
         const [y, m, d] = key.split('-').map(Number);
         const utcDayObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
         const record = appState.dailyHistory[key] || { minutes: 0, entries: [] };
@@ -1576,12 +1539,12 @@
     }
 
     document.getElementById('select-user-timezone').addEventListener('change', (e) => {
-      appState.timezone = e.target.value;
+      appState.gmtOffsetMinutes = Number(e.target.value);
       saveState();
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
-      showToast(formatTimezoneLabel(appState.timezone));
+      showToast(formatGmtOffsetLabel(appState.gmtOffsetMinutes));
     });
 
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
@@ -1650,10 +1613,10 @@
     document.getElementById('btn-reset-all').addEventListener('click', () => {
       if (!confirm('Reset all saved tasks and weekly focus history?')) return;
       const currentTheme = appState.theme;
-      const currentTz = appState.timezone;
+      const currentGmt = appState.gmtOffsetMinutes;
       appState = createEmptyState();
       appState.theme = currentTheme;
-      appState.timezone = currentTz;
+      appState.gmtOffsetMinutes = currentGmt;
       saveState();
       switchTimerMode('focus');
       renderKPIs();
@@ -1721,7 +1684,7 @@
       });
       document.getElementById('header-date-display').textContent = dateStr;
 
-      initTimezoneDropdown();
+      initGmtDropdown();
       applyTheme(appState.theme);
       updateMuteIcon();
       updateSoundscapeButtons();
