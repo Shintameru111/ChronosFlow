@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChronosFlow — Personal Productivity &amp; Time Management Dashboard</title>
+  <title>ChronosFlow — Strict Focus OS</title>
 
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -56,6 +56,15 @@
       animation: gentlePulse 2.2s infinite ease-in-out;
     }
 
+    @keyframes alarmShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .animate-shake {
+      animation: alarmShake 0.45s ease-in-out;
+    }
+
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
     }
@@ -75,6 +84,29 @@
 <body class="bg-stone-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 selection:bg-indigo-500 selection:text-white">
 
   <!-- ===================================================================== -->
+  <!-- STRICT LOCKDOWN TOP BANNER (APPEARS WHEN LOCKED IN FOCUS)             -->
+  <!-- ===================================================================== -->
+  <div id="lockdown-status-bar" class="hidden w-full bg-rose-600 text-white text-xs font-semibold px-4 py-2 z-40">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+        <span>STRICT LOCKDOWN ACTIVE — Exit &amp; task switching disabled until timer finishes!</span>
+        <span id="lockdown-violation-badge" class="px-2 py-0.5 rounded-md bg-rose-800 font-mono text-[11px]">
+          Escape attempts: 0
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-reenter-fullscreen" type="button" class="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-[11px] font-bold transition">
+          Lock Fullscreen
+        </button>
+        <button id="btn-emergency-hold" type="button" class="px-2.5 py-1 rounded-lg bg-rose-900/80 hover:bg-rose-950 text-[11px] font-mono transition" title="Hold for 5 seconds to force unlock">
+          Hold 5s Emergency Unlock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- TOP NAVIGATION BAR                                                    -->
   <!-- ===================================================================== -->
   <header class="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md sticky top-0 z-30">
@@ -91,7 +123,7 @@
           <div class="flex items-center gap-2">
             <h1 class="text-base sm:text-lg font-bold tracking-tight leading-none">ChronosFlow</h1>
             <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
-              Focus OS
+              Strict Focus OS
             </span>
           </div>
           <p id="header-date-display" class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">Loading date &amp; time...</p>
@@ -100,6 +132,15 @@
 
       <!-- Right Action Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Strict Lockdown Toggle -->
+        <button id="btn-toggle-strict-mode" type="button" class="px-3 py-2 rounded-xl text-xs font-bold border transition flex items-center gap-1.5" title="Toggle Strict Focus Lockdown">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="label-strict-mode">Lockdown: ON</span>
+        </button>
+
         <!-- Timer Settings Trigger -->
         <button id="btn-open-settings" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="Customize Timer Intervals & Daily Goal">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -207,7 +248,7 @@
     <!-- ROW 2: MAIN FOCUS ENGINE (LEFT) + TASK & TIME-BLOCK MANAGER (RIGHT) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- LEFT COLUMN (5 cols): POMODORO TIMER, AMBIENT AUDIO & WEEKLY CHART -->
+      <!-- LEFT COLUMN (5 cols): POMODORO TIMER, ALLOWED APP LAUNCHER, AMBIENT AUDIO & WEEKLY CHART -->
       <div class="lg:col-span-5 flex flex-col gap-6">
 
         <!-- Pomodoro Focus Card -->
@@ -249,26 +290,46 @@
               <div id="timer-readout" class="text-5xl sm:text-6xl font-mono font-bold tracking-tight tabular-nums">
                 25:00
               </div>
-              <span class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Press <kbd class="font-mono px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Space</kbd> to toggle</span>
+              <span id="timer-hint-text" class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Press <kbd class="font-mono px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Space</kbd> to toggle</span>
             </div>
           </div>
 
-          <!-- Active Task Banner (Linked Task for Current Timer Mode) -->
-          <div class="w-full mb-5 px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between gap-2 text-left">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center justify-between gap-2">
-                <span id="active-task-mode-badge" class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  Working On (Focus)
-                </span>
-                <span id="active-task-sessions-left" class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400"></span>
+          <!-- Active Task Banner + Allowed App / Website Launcher -->
+          <div class="w-full mb-5 px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5 text-left">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span id="active-task-mode-badge" class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    Working On (Focus)
+                  </span>
+                  <span id="active-task-sessions-left" class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400"></span>
+                </div>
+                <div id="active-task-title" class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  Select a task from your queue →
+                </div>
               </div>
-              <div id="active-task-title" class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate mt-0.5">
-                Select a task from your queue →
-              </div>
+              <button id="btn-unlink-task" class="hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition" title="Unlink Task">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+              </button>
             </div>
-            <button id="btn-unlink-task" class="hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition" title="Unlink Task">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-            </button>
+
+            <!-- Allowed App / Website Launch Bar (Only opens when Focus/Task is active) -->
+            <div id="allowed-target-box" class="hidden pt-2 border-t border-slate-200/70 dark:border-slate-700/70 flex items-center justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Allowed App / Website
+                </span>
+                <span id="allowed-target-label" class="block text-xs font-mono text-slate-600 dark:text-slate-300 truncate"></span>
+              </div>
+              <button id="btn-launch-allowed-target" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1 shrink-0">
+                <span>Open Locked App</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Primary Timer Controls -->
@@ -342,7 +403,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-base sm:text-lg font-bold">Priority Tasks &amp; Time Blocks</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Select a task to run with matching timer mode</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Assign allowed app/website to lock yourself into your workflow</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -390,6 +451,17 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               <span>Add Task</span>
             </button>
+          </div>
+
+          <!-- Allowed App / Website Target Input -->
+          <div>
+            <input
+              id="input-task-target-url"
+              type="text"
+              maxlength="180"
+              placeholder="Allowed Website or App URI (optional, e.g. https://docs.google.com or notion://)"
+              class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
 
           <div class="flex flex-wrap items-center gap-2 text-xs">
@@ -445,6 +517,38 @@
       </section>
     </div>
   </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 0: ESCAPE ATTEMPT / STRICT LOCKDOWN VIOLATION OVERLAY           -->
+  <!-- ===================================================================== -->
+  <div id="modal-lockdown-alert" class="hidden fixed inset-0 z-[70] bg-rose-950/95 backdrop-blur-md flex items-center justify-center p-4 text-white">
+    <div id="lockdown-alert-box" class="bg-slate-900 border-2 border-rose-500 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl text-center space-y-5">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-600/20 border border-rose-500/50 text-rose-400 flex items-center justify-center">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <div>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-rose-600 text-white">
+          Escape Blocked
+        </span>
+        <h2 class="text-xl font-bold mt-2">Mau kabur ke mana?!</h2>
+        <p id="lockdown-alert-reason" class="text-xs sm:text-sm text-slate-300 mt-1.5">
+          Kamu masih dalam sesi Focus! Kamu tidak diizinkan keluar dari aplikasi sebelum waktu selesai.
+        </p>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400">Sisa Waktu Terkunci</span>
+        <span id="lockdown-alert-remaining" class="font-mono text-3xl font-bold text-rose-400 tabular-nums">25:00</span>
+      </div>
+
+      <button id="btn-dismiss-lockdown-alert" type="button" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg transition">
+        Kembali Fokus Sekarang (Fullscreen)
+      </button>
+    </div>
+  </div>
 
   <!-- ===================================================================== -->
   <!-- MODAL 1: DAILY FOCUS BREAKDOWN                                        -->
@@ -533,7 +637,7 @@
   <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
-    const STORAGE_KEY = 'chronosflow_persistent_v10';
+    const STORAGE_KEY = 'chronosflow_persistent_v11';
     const RING_CIRCUMFERENCE = 2 * Math.PI * 96; // 603.19
 
     // Worldwide GMT offsets in minutes (-720 = GMT-12 up to +840 = GMT+14)
@@ -619,6 +723,7 @@
       return {
         theme: 'light',
         muted: false,
+        strictLockdown: true,
         gmtOffsetMinutes: detectLocalGmtOffsetMinutes(),
         settings: {
           focusMin: 25,
@@ -647,11 +752,13 @@
           ? parsed.tasks.map(t => ({
               ...t,
               sessionMode: ['focus', 'short', 'long'].includes(t.sessionMode) ? t.sessionMode : 'focus',
+              allowedTarget: typeof t.allowedTarget === 'string' ? t.allowedTarget : '',
             }))
           : [];
         return {
           ...base,
           ...parsed,
+          strictLockdown: typeof parsed.strictLockdown === 'boolean' ? parsed.strictLockdown : true,
           gmtOffsetMinutes: typeof parsed.gmtOffsetMinutes === 'number'
             ? parsed.gmtOffsetMinutes
             : base.gmtOffsetMinutes,
@@ -755,7 +862,90 @@
       intervalId: null,
       ambientMode: 'off',
       selectedDetailDate: null,
+      escapeAttempts: 0,
+      launchingAllowedWindow: false,
     };
+
+    // =========================================================================
+    // STRICT LOCKDOWN & NATIVE APK KIOSK BRIDGE
+    // =========================================================================
+
+    function isFocusLockEngaged() {
+      return Boolean(appState.strictLockdown && runtime.isRunning && runtime.mode === 'focus');
+    }
+
+    function requestBrowserFullscreen() {
+      try {
+        const el = document.documentElement;
+        if (!document.fullscreenElement && el.requestFullscreen) {
+          el.requestFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function exitBrowserFullscreen() {
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    // Native Android/Capacitor bridge hook when compiled into .apk
+    function syncNativeApkLockTask(locked, allowedPackageOrUrl = '') {
+      try {
+        if (window.ChronosNativeLock && typeof window.ChronosNativeLock.setLockState === 'function') {
+          window.ChronosNativeLock.setLockState(locked, allowedPackageOrUrl);
+        }
+      } catch (e) {}
+    }
+
+    function triggerLockdownViolation(reasonText) {
+      if (!isFocusLockEngaged()) return;
+      runtime.escapeAttempts += 1;
+      document.getElementById('lockdown-violation-badge').textContent =
+        `Escape attempts: ${runtime.escapeAttempts}`;
+      document.getElementById('lockdown-alert-reason').textContent = reasonText;
+      document.getElementById('lockdown-alert-remaining').textContent =
+        formatClock(runtime.remainingSeconds);
+
+      const modal = document.getElementById('modal-lockdown-alert');
+      const box = document.getElementById('lockdown-alert-box');
+      modal.classList.remove('hidden');
+      box.classList.remove('animate-shake');
+      void box.offsetWidth;
+      box.classList.add('animate-shake');
+
+      AudioEngine.playAnnoyingSiren();
+    }
+
+    function launchAllowedTarget(rawTarget) {
+      const cleaned = (rawTarget || '').trim();
+      if (!cleaned) return;
+      const url = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(cleaned) ? cleaned : `https://${cleaned}`;
+
+      // Temporarily allow opening the permitted target without triggering escape alarm
+      runtime.launchingAllowedWindow = true;
+      setTimeout(() => {
+        runtime.launchingAllowedWindow = false;
+      }, 2500);
+
+      syncNativeApkLockTask(true, url);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      showToast(`Membuka workspace terizinkan: ${cleaned}`);
+    }
+
+    function updateStrictModeButtonUI() {
+      const btn = document.getElementById('btn-toggle-strict-mode');
+      const label = document.getElementById('label-strict-mode');
+      if (appState.strictLockdown) {
+        btn.className = 'px-3 py-2 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition flex items-center gap-1.5';
+        label.textContent = 'Lockdown: ON';
+      } else {
+        btn.className = 'px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5';
+        label.textContent = 'Lockdown: OFF';
+      }
+    }
 
     function initGmtDropdown() {
       const selectEl = document.getElementById('select-user-timezone');
@@ -794,7 +984,7 @@
     }
 
     // =========================================================================
-    // WEB AUDIO API ENGINE
+    // WEB AUDIO API ENGINE (CHIME + ANNOYING SIREN + AMBIENT)
     // =========================================================================
     const AudioEngine = (() => {
       let ctx = null;
@@ -833,6 +1023,29 @@
 
             osc.start(now + idx * 0.14);
             osc.stop(now + idx * 0.14 + 1.15);
+          });
+        } catch (e) {}
+      }
+
+      function playAnnoyingSiren() {
+        try {
+          const audioCtx = ensureContext();
+          const now = audioCtx.currentTime;
+          const beeps = [880, 620, 960, 580, 1040];
+
+          beeps.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+            gain.gain.setValueAtTime(0.16, now + idx * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.11);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.12);
+            osc.stop(now + idx * 0.12 + 0.115);
           });
         } catch (e) {}
       }
@@ -907,7 +1120,7 @@
         }
       }
 
-      return { playCompletionChime, startAmbient, stopAmbient };
+      return { playCompletionChime, playAnnoyingSiren, startAmbient, stopAmbient };
     })();
 
     // =========================================================================
@@ -930,8 +1143,12 @@
       return getModeDurationMinutes(mode) * 60;
     }
 
-    function switchTimerMode(mode) {
-      pauseTimer();
+    function switchTimerMode(mode, bypassLock = false) {
+      if (!bypassLock && isFocusLockEngaged()) {
+        triggerLockdownViolation('Mode timer terkunci selama sesi Focus berjalan! Selesaikan waktumu dulu.');
+        return;
+      }
+      pauseTimer(true);
       runtime.mode = mode;
       runtime.totalSeconds = getModeDurationSeconds(mode);
       runtime.remainingSeconds = runtime.totalSeconds;
@@ -944,6 +1161,15 @@
       if (runtime.isRunning) return;
       runtime.isRunning = true;
       runtime.endTimestamp = Date.now() + runtime.remainingSeconds * 1000;
+
+      if (runtime.mode === 'focus' && appState.strictLockdown) {
+        runtime.escapeAttempts = 0;
+        document.getElementById('lockdown-violation-badge').textContent = 'Escape attempts: 0';
+        const activeTask = resolveActiveTaskForMode('focus');
+        syncNativeApkLockTask(true, activeTask?.allowedTarget || '');
+        requestBrowserFullscreen();
+      }
+
       updateTimerUI();
 
       runtime.intervalId = setInterval(() => {
@@ -951,13 +1177,21 @@
         runtime.remainingSeconds = secsLeft;
         updateTimerUI();
 
+        if (!document.getElementById('modal-lockdown-alert').classList.contains('hidden')) {
+          document.getElementById('lockdown-alert-remaining').textContent = formatClock(secsLeft);
+        }
+
         if (secsLeft <= 0) {
-          completeCurrentSession();
+          completeCurrentSession(true);
         }
       }, 250);
     }
 
-    function pauseTimer() {
+    function pauseTimer(bypassLock = false) {
+      if (!bypassLock && isFocusLockEngaged()) {
+        triggerLockdownViolation('Tombol Pause dikunci! Kamu tidak boleh berhenti di tengah sesi Focus.');
+        return;
+      }
       if (runtime.isRunning && runtime.endTimestamp) {
         runtime.remainingSeconds = Math.max(0, Math.ceil((runtime.endTimestamp - Date.now()) / 1000));
       }
@@ -967,26 +1201,38 @@
         clearInterval(runtime.intervalId);
         runtime.intervalId = null;
       }
+      syncNativeApkLockTask(false, '');
       updateTimerUI();
     }
 
     function toggleTimer() {
       if (runtime.isRunning) {
-        pauseTimer();
+        pauseTimer(false);
       } else {
         startTimer();
       }
     }
 
     function resetTimer() {
-      pauseTimer();
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Tombol Reset dikunci selama sesi Focus! Selesaikan sampai 00:00.');
+        return;
+      }
+      pauseTimer(true);
       runtime.totalSeconds = getModeDurationSeconds(runtime.mode);
       runtime.remainingSeconds = runtime.totalSeconds;
       updateTimerUI();
     }
 
-    function completeCurrentSession() {
-      pauseTimer();
+    function completeCurrentSession(fromNaturalZero = false) {
+      if (!fromNaturalZero && isFocusLockEngaged()) {
+        triggerLockdownViolation('Tombol Skip dikunci! Kamu tidak boleh mempercepat waktu Focus.');
+        return;
+      }
+
+      pauseTimer(true);
+      document.getElementById('modal-lockdown-alert').classList.add('hidden');
+      exitBrowserFullscreen();
       AudioEngine.playCompletionChime();
 
       const completedMode = runtime.mode;
@@ -998,13 +1244,11 @@
       const completedStamp = formatCompletionTimestamp(nowIso, gmtOffset);
       const dayRecord = ensureDayRecord(today);
 
-      // Focus minutes count toward daily focus KPI & streak
       if (completedMode === 'focus') {
         dayRecord.minutes += loggedMin;
         dayRecord.sessions += 1;
       }
 
-      // Match active task tagged with the completed timer mode (Focus / Short Break / Long Break)
       const linkedTask = resolveActiveTaskForMode(completedMode);
 
       if (linkedTask) {
@@ -1042,7 +1286,7 @@
             t => !t.completed && t.id !== linkedTask.id && getTaskMode(t) === completedMode
           );
           appState.activeTaskIdsByMode[completedMode] = nextTask ? nextTask.id : null;
-          showToast(`[${modeLabel}] Sesi ${nextDoneSessions}/${totalSessions} beres! Task otomatis tercentang.`);
+          showToast(`[${modeLabel}] Sesi ${nextDoneSessions}/${totalSessions} beres! Kunci dibuka & task tercentang.`);
         } else {
           showToast(`[${modeLabel}] Sesi ${nextDoneSessions}/${totalSessions} selesai! Sisa ${sessionsLeft} sesi lagi.`);
         }
@@ -1057,7 +1301,7 @@
           status: 'session_logged',
           timestamp: completedStamp,
         });
-        showToast(`Focus session complete! +${loggedMin}m (${completedStamp})`);
+        showToast(`Focus selesai! Kunci dibuka (+${loggedMin}m)`);
       } else {
         showToast(`${modeLabel} finished! Ready for your next block.`);
       }
@@ -1070,16 +1314,22 @@
 
       if (completedMode === 'focus') {
         const cycleLong = dayRecord.sessions % 4 === 0;
-        switchTimerMode(cycleLong ? 'long' : 'short');
+        switchTimerMode(cycleLong ? 'long' : 'short', true);
       } else {
-        switchTimerMode('focus');
+        switchTimerMode('focus', true);
       }
     }
 
     function updateTimerUI() {
       const clockStr = formatClock(runtime.remainingSeconds);
+      const locked = isFocusLockEngaged();
+
       document.getElementById('timer-readout').textContent = clockStr;
-      document.title = runtime.isRunning ? `(${clockStr}) ChronosFlow` : 'ChronosFlow — Productivity Dashboard';
+      document.title = runtime.isRunning
+        ? `${locked ? '🔒 ' : ''}(${clockStr}) ChronosFlow`
+        : 'ChronosFlow — Strict Focus OS';
+
+      document.getElementById('lockdown-status-bar').classList.toggle('hidden', !locked);
 
       const ring = document.getElementById('timer-progress-ring');
       const ratio = runtime.totalSeconds > 0 ? runtime.remainingSeconds / runtime.totalSeconds : 1;
@@ -1091,8 +1341,11 @@
       const activeModeBadge = document.getElementById('active-task-mode-badge');
 
       if (runtime.mode === 'focus') {
-        ring.setAttribute('class', 'progress-ring__circle stroke-indigo-600 dark:stroke-indigo-500');
-        modeLabelEl.textContent = 'Deep Focus';
+        ring.setAttribute('class', locked
+          ? 'progress-ring__circle stroke-rose-600 dark:stroke-rose-500'
+          : 'progress-ring__circle stroke-indigo-600 dark:stroke-indigo-500'
+        );
+        modeLabelEl.textContent = locked ? 'Locked Focus' : 'Deep Focus';
         activeModeBadge.className = 'text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400';
         activeModeBadge.textContent = 'Working On (Focus)';
       } else if (runtime.mode === 'short') {
@@ -1107,29 +1360,57 @@
         activeModeBadge.textContent = 'Active Task (Long Break)';
       }
 
+      const toggleBtn = document.getElementById('btn-timer-toggle');
+      const resetBtn = document.getElementById('btn-timer-reset');
+      const skipBtn = document.getElementById('btn-timer-skip');
+      const hintEl = document.getElementById('timer-hint-text');
+
       if (runtime.isRunning) {
-        statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-live-dot';
-        document.getElementById('icon-timer-play').classList.add('hidden');
-        document.getElementById('icon-timer-pause').classList.remove('hidden');
-        document.getElementById('label-timer-toggle').textContent = 'Pause';
+        statusDot.className = locked
+          ? 'w-2 h-2 rounded-full bg-rose-500 animate-live-dot'
+          : 'w-2 h-2 rounded-full bg-emerald-500 animate-live-dot';
+
+        if (locked) {
+          document.getElementById('icon-timer-play').classList.add('hidden');
+          document.getElementById('icon-timer-pause').classList.add('hidden');
+          document.getElementById('label-timer-toggle').textContent = 'Locked Until 00:00';
+          toggleBtn.className = 'flex-1 max-w-[210px] py-3.5 px-6 rounded-2xl bg-rose-600 text-white font-semibold text-sm shadow-md cursor-not-allowed flex items-center justify-center gap-2';
+          resetBtn.classList.add('opacity-40', 'cursor-not-allowed');
+          skipBtn.classList.add('opacity-40', 'cursor-not-allowed');
+          hintEl.textContent = 'Strict Lockdown active — escape disabled';
+        } else {
+          document.getElementById('icon-timer-play').classList.add('hidden');
+          document.getElementById('icon-timer-pause').classList.remove('hidden');
+          document.getElementById('label-timer-toggle').textContent = 'Pause';
+          toggleBtn.className = 'flex-1 max-w-[190px] py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2';
+          resetBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+          skipBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+          hintEl.innerHTML = 'Press <kbd class="font-mono px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Space</kbd> to toggle';
+        }
       } else {
         statusDot.className = 'w-2 h-2 rounded-full bg-slate-400';
         document.getElementById('icon-timer-play').classList.remove('hidden');
         document.getElementById('icon-timer-pause').classList.add('hidden');
         document.getElementById('label-timer-toggle').textContent = runtime.mode === 'focus' ? 'Start Focus' : 'Start Break';
+        toggleBtn.className = 'flex-1 max-w-[190px] py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2';
+        resetBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        skipBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        hintEl.innerHTML = 'Press <kbd class="font-mono px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Space</kbd> to toggle';
       }
 
       document.querySelectorAll('.mode-tab').forEach(btn => {
         const active = btn.dataset.mode === runtime.mode;
         btn.className = active
           ? 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition'
-          : 'mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
+          : `mode-tab flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition ${locked ? 'opacity-40 cursor-not-allowed' : ''}`;
       });
 
       const activeTask = resolveActiveTaskForMode(runtime.mode);
       const taskTitleEl = document.getElementById('active-task-title');
       const sessionsLeftEl = document.getElementById('active-task-sessions-left');
       const unlinkBtn = document.getElementById('btn-unlink-task');
+      const allowedBox = document.getElementById('allowed-target-box');
+      const allowedLabel = document.getElementById('allowed-target-label');
       const currentModeLabel = getModeDisplayLabel(runtime.mode);
 
       if (activeTask) {
@@ -1138,11 +1419,19 @@
         const left = getRemainingSessions(activeTask);
         taskTitleEl.textContent = activeTask.title;
         sessionsLeftEl.textContent = `${left} left (${done}/${total})`;
-        unlinkBtn.classList.remove('hidden');
+        unlinkBtn.classList.toggle('hidden', locked);
+
+        if (activeTask.allowedTarget) {
+          allowedBox.classList.remove('hidden');
+          allowedLabel.textContent = activeTask.allowedTarget;
+        } else {
+          allowedBox.classList.add('hidden');
+        }
       } else {
         taskTitleEl.textContent = `No "${currentModeLabel}" task selected — pick or add one →`;
         sessionsLeftEl.textContent = '';
         unlinkBtn.classList.add('hidden');
+        allowedBox.classList.add('hidden');
       }
     }
 
@@ -1150,7 +1439,7 @@
     // PRIORITY TASK MANAGER
     // =========================================================================
 
-    function addTask(title, priority, block, sessionMode, estSessions) {
+    function addTask(title, priority, block, sessionMode, estSessions, allowedTarget) {
       const parsedEst = Math.max(1, parseInt(estSessions, 10) || 1);
       const normalizedMode = ['focus', 'short', 'long'].includes(sessionMode) ? sessionMode : 'focus';
       const gmtOffset = getActiveGmtOffset();
@@ -1160,6 +1449,7 @@
         priority,
         block,
         sessionMode: normalizedMode,
+        allowedTarget: (allowedTarget || '').trim(),
         estSessions: parsedEst,
         completedSessions: 0,
         completed: false,
@@ -1183,6 +1473,11 @@
     function toggleTaskComplete(id) {
       const task = appState.tasks.find(t => t.id === id);
       if (!task) return;
+
+      if (isFocusLockEngaged() && !task.completed) {
+        triggerLockdownViolation('Task tidak bisa dicentang manual saat Strict Lockdown berjalan! Tunggu timer habis.');
+        return;
+      }
 
       const nowIso = new Date().toISOString();
       const gmtOffset = getActiveGmtOffset();
@@ -1269,6 +1564,10 @@
     }
 
     function editTaskTitle(id) {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Edit task dikunci selama Strict Lockdown berlangsung.');
+        return;
+      }
       const task = appState.tasks.find(t => t.id === id);
       if (!task) return;
       const updated = prompt('Edit task title:', task.title);
@@ -1294,6 +1593,10 @@
     }
 
     function deleteTask(id) {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Hapus task dikunci selama Strict Lockdown berlangsung.');
+        return;
+      }
       const task = appState.tasks.find(t => t.id === id);
       const taskMode = task ? getTaskMode(task) : null;
       appState.tasks = appState.tasks.filter(t => t.id !== id);
@@ -1309,6 +1612,10 @@
     }
 
     function selectActiveTask(id) {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Ganti task dikunci! Selesaikan sesi Focus yang sedang aktif terlebih dahulu.');
+        return;
+      }
       const task = appState.tasks.find(t => t.id === id);
       if (!task || task.completed) return;
       const taskMode = getTaskMode(task);
@@ -1427,6 +1734,11 @@
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     ${escapeHTML(task.block)}
                   </span>
+                  ${
+                    task.allowedTarget
+                      ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-mono text-[10px] truncate max-w-[160px]" title="Allowed App/Site: ${escapeHTML(task.allowedTarget)}">🔗 ${escapeHTML(task.allowedTarget)}</span>`
+                      : ''
+                  }
                   ${
                     isCurrentlyRunningMode
                       ? '<span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">• Active in Timer</span>'
@@ -1711,6 +2023,10 @@
     }
 
     function openSettingsModal() {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Pengaturan dikunci selama Strict Lockdown aktif.');
+        return;
+      }
       document.getElementById('set-focus-min').value = appState.settings.focusMin;
       document.getElementById('set-short-min').value = appState.settings.shortMin;
       document.getElementById('set-long-min').value = appState.settings.longMin;
@@ -1721,6 +2037,91 @@
     function closeSettingsModal() {
       document.getElementById('modal-settings').classList.add('hidden');
     }
+
+    // Strict Lockdown Anti-Escape Event Listeners
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isFocusLockEngaged() && !runtime.launchingAllowedWindow) {
+        triggerLockdownViolation('Terdeteksi pindah tab / keluar aplikasi saat Focus berlangsung!');
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isFocusLockEngaged() && !runtime.launchingAllowedWindow) {
+        triggerLockdownViolation('Kamu keluar dari mode Fullscreen saat sesi Focus masih berjalan!');
+      }
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (isFocusLockEngaged()) {
+        e.preventDefault();
+        e.returnValue = 'Sesi Focus masih terkunci!';
+        return e.returnValue;
+      }
+    });
+
+    document.getElementById('btn-dismiss-lockdown-alert').addEventListener('click', () => {
+      document.getElementById('modal-lockdown-alert').classList.add('hidden');
+      requestBrowserFullscreen();
+    });
+
+    document.getElementById('btn-reenter-fullscreen').addEventListener('click', () => {
+      requestBrowserFullscreen();
+    });
+
+    // 5-second Emergency Hold Unlock (prevents accidental tap, only opens if held 5s)
+    (() => {
+      const holdBtn = document.getElementById('btn-emergency-hold');
+      let holdTimer = null;
+      let countdownInterval = null;
+
+      function cancelHold() {
+        clearTimeout(holdTimer);
+        clearInterval(countdownInterval);
+        holdBtn.textContent = 'Hold 5s Emergency Unlock';
+      }
+
+      function startHold() {
+        let secs = 5;
+        holdBtn.textContent = `Holding... ${secs}s`;
+        countdownInterval = setInterval(() => {
+          secs -= 1;
+          if (secs > 0) holdBtn.textContent = `Holding... ${secs}s`;
+        }, 1000);
+
+        holdTimer = setTimeout(() => {
+          clearInterval(countdownInterval);
+          holdBtn.textContent = 'Hold 5s Emergency Unlock';
+          pauseTimer(true);
+          exitBrowserFullscreen();
+          document.getElementById('modal-lockdown-alert').classList.add('hidden');
+          showToast('Emergency unlock berhasil.');
+        }, 5000);
+      }
+
+      holdBtn.addEventListener('mousedown', startHold);
+      holdBtn.addEventListener('touchstart', startHold, { passive: true });
+      holdBtn.addEventListener('mouseup', cancelHold);
+      holdBtn.addEventListener('mouseleave', cancelHold);
+      holdBtn.addEventListener('touchend', cancelHold);
+    })();
+
+    document.getElementById('btn-toggle-strict-mode').addEventListener('click', () => {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Lockdown tidak bisa dimatikan saat timer Focus sedang berjalan!');
+        return;
+      }
+      appState.strictLockdown = !appState.strictLockdown;
+      saveState();
+      updateStrictModeButtonUI();
+      showToast(appState.strictLockdown ? 'Strict Lockdown diaktifkan' : 'Strict Lockdown dimatikan');
+    });
+
+    document.getElementById('btn-launch-allowed-target').addEventListener('click', () => {
+      const activeTask = resolveActiveTaskForMode(runtime.mode);
+      if (activeTask && activeTask.allowedTarget) {
+        launchAllowedTarget(activeTask.allowedTarget);
+      }
+    });
 
     document.getElementById('select-user-timezone').addEventListener('change', (e) => {
       appState.gmtOffsetMinutes = Number(e.target.value);
@@ -1753,9 +2154,13 @@
 
     document.getElementById('btn-timer-toggle').addEventListener('click', toggleTimer);
     document.getElementById('btn-timer-reset').addEventListener('click', resetTimer);
-    document.getElementById('btn-timer-skip').addEventListener('click', completeCurrentSession);
+    document.getElementById('btn-timer-skip').addEventListener('click', () => completeCurrentSession(false));
 
     document.getElementById('btn-unlink-task').addEventListener('click', () => {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Tidak bisa melepas task saat Strict Lockdown aktif.');
+        return;
+      }
       appState.activeTaskIdsByMode[runtime.mode] = null;
       saveState();
       renderTasks();
@@ -1773,15 +2178,18 @@
     document.getElementById('form-add-task').addEventListener('submit', (e) => {
       e.preventDefault();
       const input = document.getElementById('input-task-title');
+      const targetInput = document.getElementById('input-task-target-url');
       if (!input.value.trim()) return;
       addTask(
         input.value,
         document.getElementById('select-task-priority').value,
         document.getElementById('select-task-block').value,
         document.getElementById('select-task-mode').value,
-        document.getElementById('input-task-est').value
+        document.getElementById('input-task-est').value,
+        targetInput.value
       );
       input.value = '';
+      targetInput.value = '';
     });
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1801,6 +2209,10 @@
     });
 
     document.getElementById('btn-reset-all').addEventListener('click', () => {
+      if (isFocusLockEngaged()) {
+        triggerLockdownViolation('Reset data dikunci saat Strict Lockdown aktif.');
+        return;
+      }
       if (!confirm('Reset all saved tasks and weekly focus history?')) return;
       const currentTheme = appState.theme;
       appState = createEmptyState();
@@ -1809,7 +2221,8 @@
       saveState();
       initGmtDropdown();
       updateLiveClockAndHeader();
-      switchTimerMode('focus');
+      updateStrictModeButtonUI();
+      switchTimerMode('focus', true);
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
@@ -1855,6 +2268,11 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (isFocusLockEngaged()) {
+          e.preventDefault();
+          triggerLockdownViolation('Tombol Escape diblokir selama Strict Lockdown aktif!');
+          return;
+        }
         closeSettingsModal();
         closeDayDetailModal();
         return;
@@ -1873,9 +2291,10 @@
       setInterval(updateLiveClockAndHeader, 1000);
 
       applyTheme(appState.theme);
+      updateStrictModeButtonUI();
       updateMuteIcon();
       updateSoundscapeButtons();
-      switchTimerMode('focus');
+      switchTimerMode('focus', true);
       renderKPIs();
       renderWeeklyChart();
       renderTasks();
